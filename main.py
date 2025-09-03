@@ -3,6 +3,7 @@ from datetime import datetime
 from meteostat import Stations, Daily, Hourly, Monthly
 from psycopg2.extras import execute_values
 
+from src.queries import INSERT_STATIONS
 from src.connect_db import conn
 
 def create_tables(cur):
@@ -70,18 +71,8 @@ def load_stations(cur):
         )
         for _, row in df_stations.iterrows()
     ]
-
-    insert_query = """
-        INSERT INTO stations (
-            name, country, region, wmo, icao, latitude, longitude, elevation,
-            timezone, hourly_start, hourly_end, daily_start, daily_end,
-            monthly_start, monthly_end
-        ) VALUES %s
-        ON CONFLICT DO NOTHING;  -- prevents crash if duplicates exist
-    """
-
     
-    execute_values(cur, insert_query, records)
+    execute_values(cur, INSERT_STATIONS, records)
 
 
 
