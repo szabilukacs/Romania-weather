@@ -200,23 +200,23 @@ def proba(cur):
 
         print("commit utan")
 
-              # Convert DataFrame rows to list of tuples in the correct order
+        # Convert DataFrame rows to list of tuples in the correct order
         records = [
             (
                 station_id,
-                row['time'],
-                row['tavg'],
-                row['tmin'],
-                row['tmax'],
-                row['prcp'],
-                row['snow'],
-                row['wdir'],
-                row['wspd'],
-                row['wpgt'],
-                row['pres'],
-                row['tsun']
+                row.time,
+                row.tavg,
+                row.tmin,
+                row.tmax,
+                row.prcp,
+                row.snow,
+                row.wdir,
+                row.wspd,
+                row.wpgt,
+                row.pres,
+                row.tsun
             )
-            for _, row in df_daily.iterrows()
+            for row in df_daily.itertuples(index=False)
         ]
 
         with conn.cursor() as cur:
@@ -236,7 +236,7 @@ def proba(cur):
                 row['pres'],
                 row['tsun']
             )
-            for _, row in df_monthly.iterrows()
+            for _, row in df_monthly.iterrows() # ez nem megy itertuples-el
         ]
 
         with conn.cursor() as cur:
@@ -244,10 +244,8 @@ def proba(cur):
 
         conn.commit()
 
-        # coverage = data_hourly.coverage()  # visszaadja, hogy mennyire teljes az adat
-        # count = data_hourly.count()        # hány adatpont van
-
-        #print(f"Coverage: {coverage}, Count: {count}")
+        print(f"{data_hourly.count()} Elements inserted! ")
+        print(f"Data coverage: {data_hourly.coverage():.2f} %")
 
 
 def main():
