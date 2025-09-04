@@ -29,7 +29,7 @@ try:
         host=DB_HOST,
         port=DB_PORT
     )
-    conn.autocommit = True
+    conn.autocommit = False
     logging.info("Connected to PostgreSQL database successfully.")
 except Exception as e:
     logging.error("Database connection failed", exc_info=True)

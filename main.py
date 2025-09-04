@@ -2,8 +2,10 @@ import pandas as pd
 from datetime import datetime
 from meteostat import Stations, Daily, Hourly, Monthly
 from psycopg2.extras import execute_values
+import time
+import io
 
-from src.queries import INSERT_STATIONS,SELEC_STATION_START_VALUES, INSERT_WEATHER_HOURLY, INSERT_WEATHER_DAILY
+from src.queries import INSERT_STATIONS,SELEC_STATION_START_VALUES, INSERT_WEATHER_HOURLY, INSERT_WEATHER_DAILY, INSERT_WEATHER_MONTHLY
 from src.connect_db import conn
 
 def create_tables(cur):
@@ -55,6 +57,8 @@ def load_stations(cur):
     
     execute_values(cur, INSERT_STATIONS, records)
 
+    conn.commit()
+
 
 def proba(cur):
 
@@ -89,71 +93,112 @@ def proba(cur):
 
         df_hourly = data_hourly.fetch()
         df_daily = data_daily.fetch()
+        df_monthly = data_monthly.fetch()
 
-        # print(df_hourly)
+        print(df_hourly)
         print(df_hourly.columns)
 
         df_hourly = df_hourly.reset_index().rename(columns={"index": "time"})
         df_daily = df_daily.reset_index().rename(columns={"index": "time"})
+        df_monthly = df_monthly.reset_index().rename(columns={"index": "time"})
 
         #TODO itt rendet rakni
 
-        df_hourly["time"] = pd.to_datetime(df_hourly["time"])
-        print(df_hourly)
-        # Csak a time oszlop alapján nézzük a duplikátumokat, megtartjuk az első előfordulást
-        df_hourly = df_hourly.drop_duplicates(subset=["time"], keep="first")
+        df_hourly["time"] = pd.to_datetime(df_hourly["time"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
 
-
-        # Convert to datetime, invalid parsing -> NaT
-        df_hourly["time"] = pd.to_datetime(df_hourly["time"], errors="coerce")
-
-        # Drop rows where time is NaT
-        df_hourly = df_hourly.dropna(subset=["time"])
+        # A NaT értékek cseréje None-ra
+        df_hourly["time"] = df_hourly["time"].where(df_hourly["time"].notna(), None)
+        
 
         # Feltételezzük, hogy df_hourly["time"] már datetime és nincs NaT
         cols_to_check = df_hourly.columns.difference(["time"])  # minden oszlop, kivéve 'time'
 
-        # Drop rows where all columns_to_check are NULL (NaN) or 0
-        df_hourly = df_hourly[~df_hourly[cols_to_check].apply(lambda row: all((pd.isna(x) or x == 0) for x in row), axis=1)]
+        # Igaz/hamis mátrix: True ha NaN vagy 0
+        mask = (df_hourly[cols_to_check].isna()) | (df_hourly[cols_to_check] == 0)
 
-        # Ellenőrzés
-        print(df_hourly)
+        # Olyan sor kell, ahol NEM mind igaz (tehát van legalább egy nem-null és nem-0 érték)
+        df_hourly = df_hourly[~mask.all(axis=1)]
+
+        print(df_hourly.columns)
 
 
         # Ellenőrzés
         print(df_hourly["time"].isna().sum())  # 0-nak kell lennie
 
-        print(df_hourly.iloc[50:56])
-
-
-
         df_daily["time"] = pd.to_datetime(df_daily["time"]).dt.date
+
+        df_monthly["time"] = pd.to_datetime(df_monthly["time"]).dt.date
+
+        print("ITT")
 
         # Replace all Pandas NA types with Python None
         df_hourly.replace({pd.NA: None}, inplace=True)
         df_daily.replace({pd.NA: None}, inplace=True)
+        df_monthly.replace({pd.NA: None}, inplace=True)
+
+        print("ITT2")
 
        # Convert DataFrame rows to list of tuples in the correct order
         records = [
             (
                 station_id,
-                row['time'],
-                row['temp'],
-                row['dwpt'],
-                row['rhum'],
-                row['prcp'],
-                row['snow'],
-                row['wdir'],
-                row['wspd'],
-                row['wpgt'],
-                row['pres'],
-                row['tsun'],
-                row['coco']
+                row.time,
+                row.temp,
+                row.dwpt,
+                row.rhum,
+                row.prcp,
+                row.snow,
+                row.wdir,
+                row.wspd,
+                row.wpgt,
+                row.pres,
+                row.tsun,
+                row.coco
             )
-            for _, row in df_hourly.iterrows()
+            for row in df_hourly.itertuples(index=False)
         ]
+        batch_size = 100000
 
-        execute_values(cur, INSERT_WEATHER_HOURLY, records)
+        print("ITT3")
+
+      #  for i in range(0, len(records), batch_size):
+       #     batch = records[i:i+batch_size]
+        #    execute_values(cur, INSERT_WEATHER_HOURLY, batch)
+         #   conn.commit()   # commit after each batch
+
+        #cols = [
+       #     "station_id", "time", "temp", "dwpt", "rhum", "prcp", "snow",
+       #     "wdir", "wspd", "wpgt", "pres", "tsun", "coco"
+      #  ]
+       # df_hourly = df_hourly[cols].where(pd.notna(df_hourly[cols]), None)
+
+        df_hourly["station_id"] = station_id
+
+        cols = [
+            "station_id", "time", "temp", "dwpt", "rhum", "prcp", "snow",
+            "wdir", "wspd", "wpgt", "pres", "tsun", "coco"
+        ]
+        df_hourly = df_hourly[cols].where(pd.notna(df_hourly[cols]), None)
+
+        
+        buffer = io.StringIO()
+        df_hourly.to_csv(buffer, index=False, header=False)  
+        buffer.seek(0)
+
+        with conn.cursor() as cur:
+            cur.copy_expert(
+                sql=f"""
+                    COPY weather_data_hourly (
+                        {", ".join(cols)}
+                    )
+                    FROM STDIN WITH (FORMAT CSV, NULL '');
+                """,
+                file=buffer
+            )
+        conn.commit()
+
+
+        print("commit utan")
 
               # Convert DataFrame rows to list of tuples in the correct order
         records = [
@@ -174,15 +219,40 @@ def proba(cur):
             for _, row in df_daily.iterrows()
         ]
 
-        execute_values(cur, INSERT_WEATHER_DAILY, records)
+        with conn.cursor() as cur:
+            execute_values(cur, INSERT_WEATHER_DAILY, records)
 
-        coverage = data_hourly.coverage()  # visszaadja, hogy mennyire teljes az adat
-        count = data_hourly.count()        # hány adatpont van
+        conn.commit()
 
-        print(f"Coverage: {coverage}, Count: {count}")
+        records = [
+            (
+                station_id,
+                row['time'],
+                row['tavg'],
+                row['tmin'],
+                row['tmax'],
+                row['prcp'],
+                row['wspd'],
+                row['pres'],
+                row['tsun']
+            )
+            for _, row in df_monthly.iterrows()
+        ]
+
+        with conn.cursor() as cur:
+            execute_values(cur, INSERT_WEATHER_MONTHLY, records)
+
+        conn.commit()
+
+        # coverage = data_hourly.coverage()  # visszaadja, hogy mennyire teljes az adat
+        # count = data_hourly.count()        # hány adatpont van
+
+        #print(f"Coverage: {coverage}, Count: {count}")
 
 
 def main():
+
+    start = time.time()
 
     cur = conn.cursor()
 
@@ -194,6 +264,10 @@ def main():
 
     cur.close()
     conn.close()
+
+    end = time.time()
+
+    print(f"Elapsed time {end - start}")
 
 
 

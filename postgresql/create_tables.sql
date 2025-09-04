@@ -54,5 +54,18 @@ CREATE TABLE IF NOT EXISTS weather_data_daily (
     tsun REAL                                  -- sunshine duration (hours)
 );
 
+CREATE TABLE IF NOT EXISTS weather_data_monthly (
+    id SERIAL PRIMARY KEY,                     -- internal unique ID
+    station_id INT NOT NULL REFERENCES stations(wmo),  -- foreign key to stations table
+    time DATE NOT NULL,                        -- date of the measurement
+    tavg REAL,                                 -- average temperature (°C)
+    tmin REAL,                                 -- minimum temperature (°C)
+    tmax REAL,                                 -- maximum temperature (°C)
+    prcp REAL,                                 -- precipitation (mm)
+    wspd REAL,                                 -- wind speed (km/h or m/s)
+    pres REAL,                                 -- atmospheric pressure (hPa)
+    tsun REAL                                  -- sunshine duration (hours)
+);
+
 
 
