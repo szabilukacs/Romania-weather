@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS stations CASCADE;
 DROP TABLE IF EXISTS weather_data_hourly CASCADE;
 DROP TABLE IF EXISTS weather_data_daily CASCADE;
+DROP TABLE IF EXISTS weather_data_monthly CASCADE;
 
 CREATE TABLE IF NOT EXISTS stations (
     name TEXT NOT NULL,              -- station name

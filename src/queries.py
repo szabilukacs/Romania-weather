@@ -8,12 +8,6 @@ INSERT_STATIONS = """
     """
 SELEC_STATION_START_VALUES = """ SELECT wmo, hourly_start, daily_start, monthly_start FROM stations; """
 
-INSERT_WEATHER_HOURLY = """
-INSERT INTO weather_data_hourly (
-    station_id, time, temp, dwpt, rhum, prcp, snow, wdir, wspd, wpgt, pres, tsun, coco
-) VALUES %s;
-"""
-
 INSERT_WEATHER_DAILY = """
 INSERT INTO weather_data_daily (
     station_id, time, tavg, tmin, tmax, prcp, snow, wdir, wspd, wpgt, pres, tsun
