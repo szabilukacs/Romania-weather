@@ -15,24 +15,6 @@ def get_start_date(row, cols=("hourly_start", "daily_start", "monthly_start")):
 def rename_index_to_time(df, new_name="time"):
     return df.reset_index().rename(columns={"index": new_name})
 
-def clean_hourly_data(df_hourly: pd.DataFrame):  
-    # A NaT értékek cseréje None-ra
-    df_hourly["time"] = df_hourly["time"].where(df_hourly["time"].notna(), None)
-
-    # Feltételezzük, hogy df_hourly["time"] már datetime és nincs NaT
-    cols_to_check = df_hourly.columns.difference(["time"])  # minden oszlop, kivéve 'time'
-
-    # Igaz/hamis mátrix: True ha NaN vagy 0
-    mask = (df_hourly[cols_to_check].isna()) | (df_hourly[cols_to_check] == 0)
-
-    # Olyan sor kell, ahol NEM mind igaz (tehát van legalább egy nem-null és nem-0 érték)
-    df_hourly = df_hourly[~mask.all(axis=1)]
-
-    # Ellenőrzés - itt később tesztbe tenni akár
-    print(df_hourly["time"].isna().sum())  # 0-nak kell lennie
-
-    return df_hourly
-
 def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
     # Add station_id column
     df["station_id"] = station_id

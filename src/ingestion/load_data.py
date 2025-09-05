@@ -3,20 +3,25 @@ from datetime import datetime
 from meteostat import Stations, Daily, Hourly, Monthly
 from psycopg2.extras import execute_values
 
-from src.utils.utils import get_start_date,rename_index_to_time, clean_hourly_data, copy_to_db, insert_into_db
-from src.queries import INSERT_STATIONS,SELEC_STATION_START_VALUES, INSERT_WEATHER_DAILY, INSERT_WEATHER_MONTHLY
-from src.connect_db import conn
+from src.utils.utils import get_start_date,rename_index_to_time, copy_to_db, insert_into_db
+from src.utils.queries import INSERT_STATIONS,SELEC_STATION_START_VALUES, INSERT_WEATHER_DAILY, INSERT_WEATHER_MONTHLY
+from src.celan_and_validate.clean_and_validate import clean_and_validate_hours, clean_and_validate_day_month
+from src.utils.connect_db import conn
 
 COLS_HOURLY = ["station_id","time", "temp", "dwpt", "rhum", "prcp", "snow",
         "wdir", "wspd", "wpgt", "pres", "tsun", "coco"]
 COLS_DAILY = ["station_id","time", "tavg", "tmin", "tmax", "prcp", "snow",
                "wdir", "wspd", "wpgt", "pres", "tsun"]
 
-def create_tables(cur):
+def create_tables():
+    cur = conn.cursor()
     with open("postgresql/create_tables.sql", "r") as f:
         cur.execute(f.read())
+    cur.close()
 
-def load_stations(cur):
+def load_stations():
+
+    cur = conn.cursor()
 
     Stations.cache_dir = 'meteostat/cache'
 
@@ -26,7 +31,7 @@ def load_stations(cur):
 
     print('Stations in Romania:', stations.count())
 
-    df_stations = stations.fetch(1)
+    df_stations = stations.fetch(10)
 
     # Convert date strings to datetime
     date_cols = ["hourly_start", "hourly_end", "daily_start", "daily_end", "monthly_start", "monthly_end"]
@@ -62,9 +67,11 @@ def load_stations(cur):
     execute_values(cur, INSERT_STATIONS, records)
 
     conn.commit()
+    cur.close()
 
-def load_weather_data(cur):
+def load_weather_data():
 
+    cur = conn.cursor()
     # Select data start dates from database
     df_station_data = pd.read_sql_query(SELEC_STATION_START_VALUES, conn)
 
@@ -81,27 +88,18 @@ def load_weather_data(cur):
         df_daily = Daily(station_id, start=start_date, end=end_date).fetch()
         df_monthly = Monthly(station_id, start=start_date, end=end_date).fetch()
 
-        # Rename the index timestamp to time
-        df_hourly = rename_index_to_time(df_hourly)
-        df_daily = rename_index_to_time(df_daily)
-        df_monthly = rename_index_to_time(df_monthly)
+        # Clean data
+        df_hourly = clean_and_validate_hours(df_hourly)
+        df_daily = clean_and_validate_day_month(df_daily)
+        df_monthly = clean_and_validate_day_month(df_monthly)
 
-        df_hourly["time"] = pd.to_datetime(df_hourly["time"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
-        df_hourly = clean_hourly_data(df_hourly)
-        df_daily["time"] = pd.to_datetime(df_daily["time"]).dt.date # TODO: kesobb tisztiani ezeket is
-        df_monthly["time"] = pd.to_datetime(df_monthly["time"]).dt.date
-
-        # Replace all Pandas NA types with Python None Clean-be berakni ezeket is
-        df_hourly.replace({pd.NA: None}, inplace=True)
-        df_daily.replace({pd.NA: None}, inplace=True)
-        df_monthly.replace({pd.NA: None}, inplace=True)
-
+        # Insert hourly datas
         copy_to_db(df_hourly, conn, station_id, COLS_HOURLY)
 
-        # Same with Daily
+        # Insert Daily datas
         insert_into_db(df_daily, conn, station_id, INSERT_WEATHER_DAILY, COLS_DAILY)
 
-        # Same with Monthly
+        # Insert Monthly datas
         records = [
             (
                 station_id,
@@ -116,8 +114,8 @@ def load_weather_data(cur):
             )
             for _, row in df_monthly.iterrows() # TODO: change it to itertuples, it is working only with iterrows
         ]
-
         with conn.cursor() as cur:
             execute_values(cur, INSERT_WEATHER_MONTHLY, records)
-
         conn.commit()
+
+    cur.close()

@@ -1,19 +1,21 @@
 import time
 
-from src.connect_db import conn
+from src.utils.connect_db import conn
 from src.ingestion.load_data import load_stations, create_tables, load_weather_data
 
 def main():
+
+    
 
     start = time.time()
 
     cur = conn.cursor()
 
-    create_tables(cur)
+    create_tables()
     
-    load_stations(cur)
+    load_stations()
 
-    load_weather_data(cur)
+    load_weather_data()
 
     cur.close()
     conn.close()
