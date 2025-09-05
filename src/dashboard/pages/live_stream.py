@@ -1,0 +1,1 @@
+# Live map varosok feltuntetve, max sarokba r;szletes adatokat kijelezni API-bol
