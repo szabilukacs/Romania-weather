@@ -23,67 +23,68 @@ station_name = st.selectbox("Choose a station:", stations["name"])
 station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
 
 # Időszak választó
-period = st.selectbox("Choose period:", ["1 month", "3 months", "6 months", "1 year"])
-period_map = {
-    "1 month": "1 month",
-    "3 months": "3 months",
-    "6 months": "6 months",
-    "1 year": "1 year"
-}
-interval = period_map[period]
+today = pd.Timestamp.today().date()
+start_date = st.date_input("Start date:", value=today - pd.Timedelta(days=37), max_value=today)
+end_date = st.date_input("End date:", value=today - pd.Timedelta(days=7), max_value=today)
 
-# Adatok lekérdezése
-query = f"""
-SELECT time, tavg, prcp
-FROM weather_data_daily
-WHERE station_id = {station_id}
-  AND time >= NOW() - INTERVAL '{interval}'
-ORDER BY time ASC;
-"""
+if start_date > end_date:
+    st.error("Start date must be before end date!")
+else:
+        # --- Adatok lekérdezése a megadott intervallumra ---
+    query = f"""
+    SELECT time, tavg, tmin, tmax, prcp
+    FROM weather_data_daily
+    WHERE station_id = {station_id}
+      AND time >= '{start_date}' AND time <= '{end_date}'
+    ORDER BY time ASC;
+    """
+    df = load_data(query)
+    df["time"] = pd.to_datetime(df["time"])
+    
+    # --- Statisztikai kártyák ---
+    col1, col2, col3, col4 = st.columns(4)
 
-df = load_data(query)
+    avg_temp = df['tavg'].mean()
+    min_temp = df['tavg'].min()
+    max_temp = df['tavg'].max()
+    total_precip = df['prcp'].sum()
 
-# Statisztikai kártyák
-col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("🌡 Átlaghőmérséklet", f"{avg_temp:.1f} °C")
+    with col2:
+        st.metric("🥶 Minimum hőmérséklet", f"{min_temp:.1f} °C")
+    with col3:
+        st.metric("🥵 Maximum hőmérséklet", f"{max_temp:.1f} °C")
+    with col4:
+        st.metric("🌧 Teljes csapadék", f"{total_precip:.1f} mm")
 
-with col1:
-    st.metric("Avg Temp (°C)", f"{df['tavg'].mean():.1f}")
-with col2:
-    st.metric("Min Temp (°C)", f"{df['tavg'].min():.1f}")
-with col3:
-    st.metric("Max Temp (°C)", f"{df['tavg'].max():.1f}")
-with col4:
-    st.metric("Total Precip (mm)", f"{df['prcp'].sum():.1f}")
-
-
-# Line chart
-temp_chart = (
-    alt.Chart(df)
-    .mark_line(color="red")
-    .encode(
-        x=alt.X("time:T", title="Idő"),
-        y=alt.Y("tavg:Q", title="Hőmérséklet (°C)"),
-        tooltip=["time", "tavg"]
+    # --- Vonaldiagram: átlaghőmérséklet ---
+    temp_chart = (
+        alt.Chart(df)
+        .mark_line(color="#FF4B4B")
+        .encode(
+            x=alt.X("time:T", title="Idő"),
+            y=alt.Y("tavg:Q", title="Hőmérséklet (°C)"),
+            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("tavg:Q", title="Hőmérséklet °C")]
+        )
+        .properties(width=700, height=300, title="📈 Napi átlaghőmérséklet")
     )
-    .properties(
-        title=f"Napi átlaghőmérséklet - elmúlt {period}",
-        width=700, 
-        height=300
+
+    # --- Oszlopdiagram: csapadék ---
+    prcp_chart = (
+        alt.Chart(df)
+        .mark_bar(color="#1F77B4")
+        .encode(
+            x=alt.X("time:T", title="Idő"),
+            y=alt.Y("prcp:Q", title="Csapadék (mm)"),
+            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("prcp:Q", title="Csapadék mm")]
+        )
+        .properties(width=700, height=200, title="🌧 Napi csapadék")
     )
-)
 
-st.altair_chart(temp_chart, use_container_width=True)
+    # Megjelenítés
+    st.altair_chart(temp_chart, use_container_width=True)
+    st.divider()
+    st.altair_chart(prcp_chart, use_container_width=True)
 
-# Csapadék oszlopdiagram
-prcp_chart = (
-    alt.Chart(df)
-    .mark_bar(color="blue")
-    .encode(
-        x=alt.X("time:T", title="Idő"),
-        y=alt.Y("prcp:Q", title="Csapadék (mm)"),
-        tooltip=["time", "prcp"]
-    )
-    .properties(title=f"Napi csapadék - elmúlt {period}", width=700, height=200)
-)
 
-st.altair_chart(prcp_chart, use_container_width=True)
