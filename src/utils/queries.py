@@ -21,3 +21,5 @@ INSERT INTO weather_data_monthly (
 ) VALUES %s
 ON CONFLICT DO NOTHING;  -- prevents crash if duplicates exist
 """
+
+SELECT_STATION_DATA = "SELECT wmo,daily_start, name FROM stations;"

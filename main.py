@@ -5,7 +5,7 @@ from src.ingestion.load_data import load_stations, create_tables, load_weather_d
 
 def main():
 
-    
+    # Letrehozni Normals tablat és betölteni oda a normal értékeket stationokhoz
 
     start = time.time()
 

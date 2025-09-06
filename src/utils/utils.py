@@ -60,3 +60,15 @@ def insert_into_db(df: pd.DataFrame, conn: psycopg2.extensions.connection, stati
             execute_values(cur, insert_sql, records)
 
     conn.commit()
+
+def calc_days_of_year(year: int):
+    # --- Data coverage ---
+    today = pd.Timestamp.today()
+     # napok számítása
+    if year == today.year:
+        # folyamatban lévő év → eddig eltelt napok
+        days_in_year = today.day_of_year
+    else:
+        # lezárt év → 365 vagy 366 nap
+        days_in_year = 366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
+    return days_in_year
