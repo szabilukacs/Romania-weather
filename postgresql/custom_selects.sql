@@ -1,6 +1,6 @@
 select * from stations;
 
-select * from weather_data_hourly where time > '2023-06-15' and station_id = '15014';
+select * from weather_data_hourly where time > '2010-06-15' and station_id = '15014' and tsun is not null;
 
 select * from weather_data_daily where station_id = '15004' and time > '2005-01-01';
 

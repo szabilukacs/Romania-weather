@@ -6,6 +6,9 @@ import sys
 sys.path.append('../')
 # sys.path.insert(1, '/src/dashboard/')
 
+# TODO: kód tisztitása mindenhol
+# TODO: live stream berakasa
+
 from utils.connect_db import connect_to_db
 
 # Lekérdezés futtatása
