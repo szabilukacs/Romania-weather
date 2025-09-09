@@ -4,6 +4,8 @@ import psycopg2
 from psycopg2.extras import execute_values
 import io
 
+from utils.connect_db import connect_to_db
+
 def get_start_date(row, cols=("hourly_start", "daily_start", "monthly_start")):
 
     hourly_start = pd.to_datetime(row["hourly_start"], errors="coerce").to_pydatetime()
@@ -72,3 +74,10 @@ def calc_days_of_year(year: int):
         # lezárt év → 365 vagy 366 nap
         days_in_year = 366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
     return days_in_year
+
+# --- Adatok betöltése ---
+def load_data(query):
+    conn = connect_to_db()
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df

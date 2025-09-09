@@ -6,7 +6,8 @@ import sys
 sys.path.append('../')
 # sys.path.insert(1, '/src/dashboard/')
 
-# TODO: kód tisztitása mindenhol
+# TODO: kód tisztitása mindenhol, yearly megvan kb.
+# TODO: kulon adatbazis api-s hivasoknak, oda menteni oket, dag-bam jad jo lesz  ameghivas
 # TODO: live stream berakasa
 
 from utils.connect_db import connect_to_db

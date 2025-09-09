@@ -3,30 +3,24 @@ import pandas as pd
 import altair as alt
 
 from datetime import datetime
-from utils.connect_db import connect_to_db
-
-# Lekérdezés futtatása
-def load_data(query):
-    conn = connect_to_db()
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df
+from utils.utils import load_data
+from utils.queries import SELECT_NAME_WMO_STATIONS
 
 st.title("📊 Éves összehasonlítás – Idén vs Tavaly")
 
-# Állomások dropdown
-stations = load_data("SELECT wmo, name FROM stations;")
+# Stations dropdown
+stations = load_data(SELECT_NAME_WMO_STATIONS)
 station_name = st.selectbox("Choose a station:", stations["name"])
 station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
 
-# Hónap kiválasztása
+# Select month
 month = st.selectbox(
     "Válassz egy hónapot az összehasonlításhoz:",
     list(range(1, int(datetime.today().month))),
     format_func=lambda x: pd.to_datetime(str(x), format="%m").strftime("%B")
 )
 
-# Adatok lekérdezése az elmúlt 2 évre
+# Load daily data for the last 2 year
 query = f"""
 SELECT time, tavg, tmin, tmax, prcp
 FROM weather_data_daily
@@ -38,18 +32,18 @@ df = load_data(query)
 
 df["time"] = pd.to_datetime(df["time"])
 
-# Csak az adott hónap
+# Select the selected month
 df_month = df[df["time"].dt.month == month]
 
-# Év szétválasztás
+# Separete the years
 current_year = pd.Timestamp.now().year
 df_month["year"] = df_month["time"].dt.year
-df_month["day"] = df_month["time"].dt.day  # nap szerinti összehasonlítás
+df_month["day"] = df_month["time"].dt.day
 
 df_current = df_month[df_month["year"] == current_year]
 df_last = df_month[df_month["year"] == (current_year - 1)]
 
-# Label oszlop
+# Label column
 df_current["label"] = f"{current_year}"
 df_last["label"] = f"{current_year - 1}"
 df_compare = pd.concat([df_current, df_last])

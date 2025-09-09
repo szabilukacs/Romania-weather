@@ -23,3 +23,5 @@ ON CONFLICT DO NOTHING;  -- prevents crash if duplicates exist
 """
 
 SELECT_STATION_DATA = "SELECT wmo,daily_start, hourly_start, elevation, name FROM stations;"
+
+SELECT_NAME_WMO_STATIONS = "SELECT wmo, name FROM stations;"

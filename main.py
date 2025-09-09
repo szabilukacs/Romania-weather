@@ -5,7 +5,13 @@ from src.ingestion.load_data import load_stations, create_tables, load_weather_d
 
 def main():
 
-    # Letrehozni Normals tablat és betölteni oda a normal értékeket stationokhoz
+    # TODO: Letrehozni Normals tablat és betölteni oda a normal értékeket stationokhoz
+    # TODO: torolni monthly adatokat ha nem kellenek akar
+    # TODO: Terv: kod tisztitas -> adatb'zis api-nak -> api lekeresek megcsinalasa proba a terkephez
+    # pytestek futtatasa -> Gitlab actions -> Docker
+    # DAG implementalsa, airflow ha megy
+    # Release
+    # Ezutan a cloudos cuccok
 
     start = time.time()
 

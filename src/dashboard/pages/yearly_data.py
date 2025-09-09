@@ -4,16 +4,8 @@ import math
 import streamlit as st
 import altair as alt
 
-from utils.connect_db import connect_to_db
-from utils.utils import calc_days_of_year
+from utils.utils import calc_days_of_year, load_data
 from utils.queries import SELECT_STATION_DATA
-# --- Adatok betöltése ---
-def load_data(query):
-    conn = connect_to_db()
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df
-
 
 def styled_progress(label, value):
     """Színezett progress bar Streamlitben"""
