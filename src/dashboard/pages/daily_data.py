@@ -9,11 +9,12 @@ import time
 
 from utils.connect_db import connect_to_db
 from utils.queries import SELECT_STATION_DATA
+from utils.constants import COCO_CODES
 
 st.title("📅 Daily Weather Data")
 
 # TODO: coco kód alapján ki is irni óránként hogy mi volt a helyzet.
-# TODO: ellenorizni az adatokn'l h'ny null van az oras adatoknal
+# TODO: ellenorizni az adatokn'l h'ny null van-e az oras adatoknal
 
 # --- Állomás kiválasztás (ha több van) ---
 # Állomás kiválasztása
@@ -82,89 +83,40 @@ else:
 
     st.altair_chart(temp_chart, use_container_width=True)
     st.altair_chart(prcp_chart, use_container_width=True)
+    
+    # Csak a szükséges oszlopok
+    
+            # Feltételezzük, hogy df tartalmazza: time, coco
+     # Biztonságos konverzió számra
+    df_coco = df[["time", "coco"]].dropna().reset_index(drop=True)
+    df_coco["coco"] = df_coco["coco"].astype(float).round().astype(int)
 
-        # Csak ahol van adat
-    # --- Adatok előfeldolgozása ---
-    df = df.dropna(subset=["wdir", "wspd"]).reset_index(drop=True)
+        # Feltérképezés condition szövegre
+    df_coco["condition"] = df_coco["coco"].map(COCO_CODES)
+    # 1️⃣ időszakok kiszámítása: meddig tartott egy adott állapot
+    df_coco["end_time"] = df_coco["time"].shift(-1)  # következő váltás az adott sor vége
+    df_coco = df_coco.dropna(subset=["end_time"])    # utolsó sorban nincs end_time
 
-    angles = np.deg2rad(df["wdir"] + 180)  # meteorológiai szélirány
-    speeds = df["wspd"].values
-    u = speeds * np.cos(angles)
-    v = speeds * np.sin(angles)
-
-    st.title("Szélirány animáció")
-
-    play_button = st.button("▶️ Play 24 órás animáció")
-
-    if play_button:
-        placeholder = st.empty()  # ide rajzoljuk minden lépésben
-        for hour_idx in range(len(df)):
-            fig, ax = plt.subplots(figsize=(6,6))
-            ax.quiver(0, 0, u[hour_idx], v[hour_idx], angles='xy', scale_units='xy', scale=1, color="crimson", width=0.015)
-
-            max_speed = max(speeds) + 5
-            ax.set_xlim(-max_speed, max_speed)
-            ax.set_ylim(-max_speed, max_speed)
-
-            # Égtájak jelzése
-            ax.text(0, max_speed, "É", ha="center", va="bottom", fontsize=12, fontweight="bold")
-            ax.text(0, -max_speed, "D", ha="center", va="top", fontsize=12, fontweight="bold")
-            ax.text(-max_speed, 0, "Ny", ha="right", va="center", fontsize=12, fontweight="bold")
-            ax.text(max_speed, 0, "K", ha="left", va="center", fontsize=12, fontweight="bold")
-
-            ax.plot(0,0,"ko")
-            ax.set_title(
-                f"Óra: {df.loc[hour_idx,'time'].hour}:00 | Szél: {speeds[hour_idx]:.1f} km/h | irány: {df.loc[hour_idx,'wdir']}°",
-                fontsize=14
-            )
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax.set_aspect('equal')
-
-            placeholder.pyplot(fig)
-            time.sleep(0.3)  # fél másodpercenként vált
-
-    # Streamlit slider
-    hour_idx = st.slider(
-        "Válassz órát:",
-        min_value=0,
-        max_value=len(df)-1,
-        value=0,
-        format="Óra %d"
+    # 2️⃣ Altair sávdiagram (timeline)
+    timeline = (
+        alt.Chart(df_coco)
+        .mark_bar()
+        .encode(
+            x=alt.X("time:T", title="Idő"),
+            x2="end_time:T",  # időszak vége
+            y=alt.Y("condition:N", title="Időjárási állapot"),
+            color=alt.Color("condition:N", legend=alt.Legend(title="Állapot")),
+            tooltip=["time:T", "end_time:T", "condition"]
+        )
+        .properties(
+            title="🌦 Időjárási állapotok idővonala",
+            width=700,
+            height=200
+        )
     )
 
-    # --- Matplotlib ábra ---
-    fig, ax = plt.subplots(figsize=(6,6))
+    st.altair_chart(timeline, use_container_width=True)
 
-    # Nyíl rajzolása az adott órára
-    ax.quiver(0, 0, u[hour_idx], v[hour_idx], angles='xy', scale_units='xy', scale=1, color="crimson", width=0.015)
-
-    # Tengelyek és skála
-    max_speed = max(speeds) + 5
-    ax.set_xlim(-max_speed, max_speed)
-    ax.set_ylim(-max_speed, max_speed)
-
-    # Égtájak jelzése
-    ax.text(0, max_speed, "É", ha="center", va="bottom", fontsize=12, fontweight="bold")
-    ax.text(0, -max_speed, "D", ha="center", va="top", fontsize=12, fontweight="bold")
-    ax.text(-max_speed, 0, "Ny", ha="right", va="center", fontsize=12, fontweight="bold")
-    ax.text(max_speed, 0, "K", ha="left", va="center", fontsize=12, fontweight="bold")
-
-    # Középső pont
-    ax.plot(0,0,"ko")  # az origó jelzése
-
-    # Cím és tooltip
-    ax.set_title(
-        f"Szél: {df.loc[hour_idx,'wspd']:.1f} km/h\nirány: {df.loc[hour_idx,'wdir']}° (0° = Észak)",
-        fontsize=14
-    )
-
-    # Tengelyek eltüntetése
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_aspect('equal')
-
-    st.pyplot(fig)
 
     total_sun_minutes = df['tsun'].sum()
     hours = total_sun_minutes // 60

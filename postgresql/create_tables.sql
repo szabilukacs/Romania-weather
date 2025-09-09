@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS weather_data_hourly (
     wpgt REAL,                         -- wind gust (km/h or m/s)
     pres REAL,                         -- atmospheric pressure (hPa)
     tsun REAL,                         -- sunshine duration (hours)
-    coco TEXT                           -- weather condition code or description
+    coco TEXT                           -- weather condition code or description    should be int
 );
 
 CREATE TABLE IF NOT EXISTS weather_data_daily (
