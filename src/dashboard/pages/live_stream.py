@@ -15,6 +15,7 @@ def load_data(query):
 df_stations = load_data("SELECT name, latitude, longitude FROM stations;")
 
 # TODO: API-bol lekert adatokat itt streamelni majd
+# TODO: meteostat interpolalt adatokat itt max egy helyre kirakni, pl szarhegy valaszthato terkeprol
 
 # Pydeck Layer
 layer = pdk.Layer(

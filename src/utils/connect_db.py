@@ -20,6 +20,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
+# TODO: main-bol kiszedni, itt ezt rendberakni hasznalni a fgv-t
 # --- Create global connection ---
 try:
     conn = psycopg2.connect(
