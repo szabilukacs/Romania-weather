@@ -28,3 +28,7 @@ COCO_CODES = {
     26: "Heavy Thunderstorm",
     27: "Storm",
 }
+
+DAILY_DAYS_SHIFT = 14 
+BLUE = "#1f77b4"
+ORANGE = "#ff7f0e"

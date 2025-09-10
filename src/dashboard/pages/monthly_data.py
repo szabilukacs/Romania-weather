@@ -5,11 +5,23 @@ from datetime import datetime
 
 from utils.utils import load_data
 from utils.queries import SELECT_NAME_WMO_STATIONS
+from utils.constants import BLUE, ORANGE
 
-BLUE = "#1f77b4"
-ORANGE = "#ff7f0e"
+def show_temperatures(df_compare: pd.DataFrame, month: int, colors: list[str]) -> None:
+    """
+    Display a line chart comparing average daily temperatures 
+    between the current year and the previous year for the selected month.
 
-def show_temperatures():
+    The chart uses Altair and plots:
+      - X-axis: Day of the month
+      - Y-axis: Average temperature (°C)
+      - Color: Year (current vs. last year)
+
+    Data source:
+        - Global `df_compare` DataFrame (merged dataset of current and last year)
+        - Global `month` variable (selected month)
+        - Global `colors` list for consistent color scheme
+    """
     temp_chart = (
         alt.Chart(df_compare)
         .mark_line()
@@ -31,8 +43,21 @@ def show_temperatures():
     )
     st.altair_chart(temp_chart, use_container_width=True)
 
-def show_prcp():
-    # --- 🌧 Csapadék chart ---
+def show_prcp(df_compare: pd.DataFrame, month: int, colors: list[str]) -> None:
+    """
+    Display a bar chart comparing daily precipitation (mm) 
+    between the current year and the previous year for the selected month.
+
+    The chart uses Altair and plots:
+      - X-axis: Day of the month
+      - Y-axis: Precipitation (mm)
+      - Color: Year (current vs. last year)
+
+    Data source:
+        - Global `df_compare` DataFrame (merged dataset of current and last year)
+        - Global `month` variable (selected month)
+        - Global `colors` list for consistent color scheme
+    """
     prcp_chart = (
         alt.Chart(df_compare)
             .mark_bar(opacity=0.6)
@@ -54,11 +79,24 @@ def show_prcp():
         )
     st.altair_chart(prcp_chart, use_container_width=True)
 
-def show_statistics():
-        # --- 📊 Statisztikai kártyák ---
+def show_statistics(df_current: pd.DataFrame, df_last: pd.DataFrame, current_year: int) -> None:
+    """
+    Display statistical summary metrics comparing:
+      - Average temperature (°C) between the current and previous year
+      - Total precipitation (mm) between the current and previous year
+
+    The function shows results using Streamlit `metric` widgets in two columns:
+      - Left column: average temperature difference
+      - Right column: total monthly precipitation difference
+
+    Data source:
+        - Global `df_current` DataFrame (current year)
+        - Global `df_last` DataFrame (previous year)
+        - Global `current_year` variable
+    """
     col1, col2 = st.columns(2)
 
-    # Átlaghőmérséklet különbség
+    # Average temperature difference
     avg_temp_current = df_current["tavg"].mean()
     avg_temp_last = df_last["tavg"].mean()
     temp_diff = avg_temp_current - avg_temp_last
@@ -69,7 +107,7 @@ def show_statistics():
         delta=f"{temp_diff:+.1f} °C vs {current_year - 1}"
     )
 
-    # Teljes havi csapadék különbség
+    # Total precipitation difference
     prcp_sum_current = df_current["prcp"].sum()
     prcp_sum_last = df_last["prcp"].sum()
     prcp_diff = prcp_sum_current - prcp_sum_last
@@ -81,6 +119,7 @@ def show_statistics():
     )
 
 
+# --- Streamlit App Layout ---
 st.title("📊 Éves összehasonlítás – Idén vs Tavaly")
 
 # Stations dropdown
@@ -107,7 +146,7 @@ df = load_data(query)
 
 df["time"] = pd.to_datetime(df["time"])
 
-# Select the selected month
+# Filter for selected month
 df_month = df[df["time"].dt.month == month]
 
 # Separete the years
@@ -125,9 +164,10 @@ df_compare = pd.concat([df_current, df_last])
 
 colors = [BLUE, ORANGE]
 
-show_statistics()
+# --- Display sections ---
+show_statistics(df_current, df_last, current_year)
 
-show_temperatures()
+show_temperatures(df_compare, month, colors)
 
-show_prcp()
+show_prcp(df_compare, month, colors)
 
