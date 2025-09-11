@@ -3,10 +3,11 @@ import pandas as pd
 from datetime import datetime
 from meteostat import Stations
 
+from src.celan_and_validate.clean_and_validate import is_valid_wmo
+
 def fetch_and_store_weather(lat: float, lon: float, station_id: int, conn, api_key: str) -> None:
     """
     Fetch current weather from OpenWeather API and store it in PostgreSQL.
-    
     Args:
         lat (float): Latitude of the station
         lon (float): Longitude of the station
@@ -81,41 +82,8 @@ def fetch_and_store_weather(lat: float, lon: float, station_id: int, conn, api_k
 
     print(f"✅ Weather record inserted for station_id={station_id}")
 
-def is_valid_wmo(wmo) -> bool:
-    """
-    Return True if `wmo` is a valid numeric WMO identifier that can be used as int.
-    This filters out None, pd.NA, NaN, the literal "<NA>" string, empty strings,
-    and any non-numeric values (except float-like integers like "123.0").
-    """
-    # explicit None / pandas NA / numpy.nan check
-    if wmo is None:
-        return False
-    if pd.isna(wmo):  # covers np.nan, pd.NA, None-like
-        return False
 
-    s = str(wmo).strip()
-    if s == "":
-        return False
-
-    # Common textual null representations
-    if s.upper() in {"<NA>", "NA", "N/A", "NONE", "NAN"}:
-        return False
-
-    # If string is all digits -> ok
-    if s.isdigit():
-        return True
-
-    # If it's a float string like "123.0", allow it (but not "123.4")
-    try:
-        f = float(s)
-        if f.is_integer():
-            return True
-        return False
-    except Exception:
-        return False
-
-
-def fetch_weather_nearby(api_key, conn, lat, lon, n_stations=5, regions: list[str] = None):
+def fetch_weather_nearby(api_key, conn, regions: list[str]):
     """
     Fetch the nearest `n_stations` to the given coordinates (lat, lon) and store their current weather data.
     If a list of regions is provided, only stations from those regions will be processed.
@@ -130,17 +98,18 @@ def fetch_weather_nearby(api_key, conn, lat, lon, n_stations=5, regions: list[st
     """
     try:
         Stations.cache_dir = 'meteostat/cache'
-        stations_obj = Stations().nearby(lat, lon)
+        stations_obj = Stations()
 
         # If regions list is provided, filter stations by each region
         if regions:
             dfs = []
             for region_code in regions:
-                region_stations = stations_obj.region('RO',region_code).fetch(n_stations)
+                region_stations = stations_obj.region('RO',region_code).fetch()
                 dfs.append(region_stations)
             stations = pd.concat(dfs, ignore_index=True)
         else:
-            stations = stations_obj.fetch(n_stations) # ezt az opciot kivenni
+            print("Invalid data!")
+            return
 
         # --- Filter out invalid WMOs ---
         valid_mask = stations['wmo'].apply(is_valid_wmo)
@@ -150,7 +119,7 @@ def fetch_weather_nearby(api_key, conn, lat, lon, n_stations=5, regions: list[st
         stations = stations.loc[valid_mask]
 
         for idx, row in stations.iterrows():
-            station_id = int(float(str(row["wmo"]).strip()))  # now guaranteed safe
+            station_id = int(float(str(row["wmo"]).strip()))
             station_lat = row["latitude"]
             station_lon = row["longitude"]
             name = row["name"]

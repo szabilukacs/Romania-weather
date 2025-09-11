@@ -37,4 +37,14 @@ ROMANIA_LAT = 45.9432
 ROMANIA_LONG = 24.9668
 MAP_ZOOM = 5.5
 
-REGIONS = ['HA', 'SM','MA','BH','SJ','CJ','BN','MU','AD','SI','HU','CV','BS']  # Hargita és Szatmár megye, pl.
+COLS_HOURLY = ["station_id","time", "temp", "dwpt", "rhum", "prcp", "snow",
+        "wdir", "wspd", "wpgt", "pres", "tsun", "coco"]
+COLS_DAILY = ["station_id","time", "tavg", "tmin", "tmax", "prcp", "snow",
+               "wdir", "wspd", "wpgt", "pres", "tsun"]
+
+# test
+REGIONS = ['HA', 'CV']
+
+# Transylvani region
+# TODO: felosztani 2 percre majd DAG-ban limit miatt
+# REGIONS = ['HA', 'SM','MA','BH','SJ','CJ','BN','MU','AD','SI','HU','CV','BS']

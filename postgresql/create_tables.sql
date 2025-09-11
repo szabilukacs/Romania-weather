@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS weather_data_hourly (
     wpgt REAL,                         -- wind gust (km/h or m/s)
     pres REAL,                         -- atmospheric pressure (hPa)
     tsun REAL,                         -- sunshine duration (hours)
-    coco TEXT                           -- weather condition code or description    should be int
+    coco INT                           -- weather condition code or description
 );
 
 CREATE TABLE IF NOT EXISTS weather_data_daily (
@@ -56,45 +56,31 @@ CREATE TABLE IF NOT EXISTS weather_data_daily (
     tsun REAL                                  -- sunshine duration (hours)
 );
 
-CREATE TABLE IF NOT EXISTS weather_data_monthly (
-    id SERIAL PRIMARY KEY,                     -- internal unique ID
-    station_id INT NOT NULL REFERENCES stations(wmo),  -- foreign key to stations table
-    time DATE NOT NULL,                        -- date of the measurement
-    tavg REAL,                                 -- average temperature (°C)
-    tmin REAL,                                 -- minimum temperature (°C)
-    tmax REAL,                                 -- maximum temperature (°C)
-    prcp REAL,                                 -- precipitation (mm)
-    wspd REAL,                                 -- wind speed (km/h or m/s)
-    pres REAL,                                 -- atmospheric pressure (hPa)
-    tsun REAL                                  -- sunshine duration (hours)
-);
-
 CREATE TABLE IF NOT EXISTS weather_live (
-    id SERIAL PRIMARY KEY,              -- egyedi azonosító
+    id SERIAL PRIMARY KEY,              -- unique identifier
 	station_id INTEGER NOT NULL REFERENCES stations(wmo),  -- foreign key to stations table
-    lat DECIMAL(8,5) NOT NULL,          -- szélesség
-    lon DECIMAL(8,5) NOT NULL,          -- hosszúság
-    timezone VARCHAR(50),               -- pl. "America/Chicago"
-    timezone_offset INT,                -- offset másodpercben
+    lat DECIMAL(8,5) NOT NULL,          -- latitude
+    lon DECIMAL(8,5) NOT NULL,          -- longitude
+    timezone VARCHAR(50),               -- e.g. "America/Chicago"
+    timezone_offset INT,                -- offset in seconds
     dt TIMESTAMP NOT NULL,              -- UNIX timestamp -> datetime
-    sunrise TIMESTAMP,                  -- napkelte
-    sunset TIMESTAMP,                   -- napnyugta
-    temp DECIMAL(5,2),                  -- hőmérséklet (°C)
-    feels_like DECIMAL(5,2),            -- hőérzet (°C)
-    pressure INT,                       -- légnyomás (hPa)
-    humidity INT,                       -- páratartalom (%)
-    dew_point DECIMAL(5,2),             -- harmatpont (°C)
+    sunrise TIMESTAMP,                  -- sunrise
+    sunset TIMESTAMP,                   -- sunset
+    temp DECIMAL(5,2),                  -- temperature (°C)
+    feels_like DECIMAL(5,2),            -- feels like (°C)
+    pressure INT,                       -- pressure (hPa)
+    humidity INT,                       -- humidity (%)
+    dew_point DECIMAL(5,2),             -- dew point (°C)
     uvi DECIMAL(4,2),                   -- UV index
-    clouds INT,                         -- felhőzet (%)
-    visibility INT,                     -- látótávolság (m)
-    wind_speed DECIMAL(5,2),            -- szélsebesség (m/s)
-    wind_deg INT,                       -- szélirány (°)
-    wind_gust DECIMAL(5,2),             -- széllökés (m/s)
+    clouds INT,                         -- cloudiness (%)
+    visibility INT,                     -- visibility (m)
+    wind_speed DECIMAL(5,2),            -- wind speed (m/s)
+    wind_deg INT,                       -- wind direction (°)
+    wind_gust DECIMAL(5,2),             -- wind gust (m/s)
     weather_id INT,                     -- OpenWeather "id"
-    weather_main VARCHAR(50),           -- rövid (pl. Clouds)
-    weather_description VARCHAR(100),   -- leírás (pl. broken clouds)
-    weather_icon VARCHAR(10),           -- ikon kód (pl. 04d)
-    created_at TIMESTAMP DEFAULT NOW()  -- mikor írtuk DB-be
+    weather_main VARCHAR(50),           -- short description (e.g. Clouds)
+    weather_description VARCHAR(50),    -- full description (e.g. broken clouds)
+    weather_icon VARCHAR(10)           -- icon code (e.g. 04d)
 );
 
 

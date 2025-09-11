@@ -7,25 +7,35 @@ import io
 sys.path.append('../../')
 from src.utils.connect_db import connect_to_db 
 
-def get_start_date(row, cols=("hourly_start", "daily_start", "monthly_start")):
-
+def get_start_date(row, cols=("hourly_start", "daily_start")):
+    """
+    Return the earliest start date from hourly and daily columns.
+    """
     hourly_start = pd.to_datetime(row["hourly_start"], errors="coerce").to_pydatetime()
     daily_start = pd.to_datetime(row["daily_start"], errors="coerce").to_pydatetime()
-    monthly_start = pd.to_datetime(row["monthly_start"], errors="coerce").to_pydatetime()
 
-    return min(hourly_start,daily_start,monthly_start)
+    return min(hourly_start, daily_start)
 
 def rename_index_to_time(df, new_name="time"):
+    """
+    Reset DataFrame index and rename it to 'time' (or specified name).
+    """
     return df.reset_index().rename(columns={"index": new_name})
 
 def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
+    """
+    Prepare DataFrame for database insertion:
+      - Add station_id
+      - Keep specified columns and convert NaN to None
+      - Convert rows to list of tuples for execute_values
+    """
     # Add station_id column
     df["station_id"] = station_id
 
     # Keep only these columns and convert NaN -> None for SQL
     df = df[cols].where(pd.notna(df[cols]), None)
 
-    # Convert DataFrame rows to list of tuples for execute_values
+    # Convert DataFrame rows to list of tuples
     records = [
         tuple(getattr(row, col) for col in cols)
         for row in df.itertuples(index=False)
@@ -34,7 +44,9 @@ def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
     return records, df
 
 def copy_to_db(df_hourly: pd.DataFrame, conn: psycopg2.extensions.connection, station_id: int, cols: list):
-    
+    """
+    Insert hourly data into the database using COPY for fast performance.
+    """
     records, df_hourly = prepare_to_records(df_hourly, station_id, cols)
 
     # Write DataFrame to in-memory CSV buffer
@@ -56,28 +68,35 @@ def copy_to_db(df_hourly: pd.DataFrame, conn: psycopg2.extensions.connection, st
     conn.commit()
 
 def insert_into_db(df: pd.DataFrame, conn: psycopg2.extensions.connection, station_id: int, insert_sql: str, cols: list): 
-
-    records, df = prepare_to_records(df,station_id, cols)
+    """
+    Insert data into the database using execute_values.
+    """
+    records, df = prepare_to_records(df, station_id, cols)
 
     with conn.cursor() as cur:
-            execute_values(cur, insert_sql, records)
+        execute_values(cur, insert_sql, records)
 
     conn.commit()
 
 def calc_days_of_year(year: int):
-    # --- Data coverage ---
+    """
+    Calculate the number of days in a given year.
+    For the current year, return days elapsed so far.
+    """
     today = pd.Timestamp.today()
-     # napok számítása
+    # Days calculation
     if year == today.year:
-        # folyamatban lévő év → eddig eltelt napok
+        # Ongoing year → days elapsed
         days_in_year = today.day_of_year
     else:
-        # lezárt év → 365 vagy 366 nap
+        # Completed year → 365 or 366
         days_in_year = 366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
     return days_in_year
 
-# --- Adatok betöltése ---
 def load_data_into_df(query):
+    """
+    Execute SQL query and return the result as a pandas DataFrame.
+    """
     conn = connect_to_db()
     df = pd.read_sql(query, conn)
     conn.close()

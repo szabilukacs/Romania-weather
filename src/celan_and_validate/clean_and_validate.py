@@ -1,7 +1,7 @@
 """
 Data Cleaning and Validation for Weather Data
 
-This module provides functions to clean and validate hourly, daily, and monthly weather data.
+This module provides functions to clean and validate hourly, daily weather data.
 It ensures that datetime values are properly parsed, removes rows with all missing or zero values,
 and validates temperature columns against defined realistic bounds.
 """
@@ -44,6 +44,9 @@ def clean_and_validate_hours(df_hourly: pd.DataFrame, temp_col: str = "temp") ->
     # Filter temperature column if exists
     if temp_col in df_hourly.columns:
         df_hourly = df_hourly[(df_hourly[temp_col] >= MIN_TEMP) & (df_hourly[temp_col] <= MAX_TEMP)]
+    # --- Convert 'coco' column to int safely ---
+    if "coco" in df_hourly.columns:
+        df_hourly["coco"] = pd.to_numeric(df_hourly["coco"], errors="coerce").astype("Int64")  # nullable int type
 
     return df_hourly
 
@@ -83,5 +86,37 @@ def clean_and_validate_days(df: pd.DataFrame, temp_col: str = "tavg") -> pd.Data
 
     return df
 
+def is_valid_wmo(wmo) -> bool:
+    """
+    Return True if `wmo` is a valid numeric WMO identifier that can be used as int.
+    This filters out None, pd.NA, NaN, the literal "<NA>" string, empty strings,
+    and any non-numeric values (except float-like integers like "123.0").
+    """
+    # explicit None / pandas NA / numpy.nan check
+    if wmo is None:
+        return False
+    if pd.isna(wmo):  # covers np.nan, pd.NA, None-like
+        return False
+
+    s = str(wmo).strip()
+    if s == "":
+        return False
+
+    # Common textual null representations
+    if s.upper() in {"<NA>", "NA", "N/A", "NONE", "NAN"}:
+        return False
+
+    # If string is all digits -> ok
+    if s.isdigit():
+        return True
+
+    # If it's a float string like "123.0", allow it (but not "123.4")
+    try:
+        f = float(s)
+        if f.is_integer():
+            return True
+        return False
+    except Exception:
+        return False
 
 

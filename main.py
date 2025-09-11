@@ -22,8 +22,7 @@ def main():
     create_tables(conn)
     
     load_stations(conn)
-    return
-
+    
     load_weather_data(conn)
 
     cur.close()
