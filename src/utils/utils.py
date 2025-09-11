@@ -34,10 +34,11 @@ def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
 
     # Keep only these columns and convert NaN -> None for SQL
     df = df[cols].where(pd.notna(df[cols]), None)
+    df = df[cols].astype(object)  # force object dtype so None marad
 
-    # Convert DataFrame rows to list of tuples
+     # Convert DataFrame rows to list of tuples, NaN -> None
     records = [
-        tuple(getattr(row, col) for col in cols)
+        tuple(getattr(row, col) if pd.notna(getattr(row, col)) else None for col in cols)
         for row in df.itertuples(index=False)
     ]
 

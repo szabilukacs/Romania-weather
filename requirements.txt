@@ -6,3 +6,4 @@ python-dotenv==1.1.1
 Requests==2.32.3
 streamlit==1.44.1
 meteostat==1.7.4
+pytest==8.4.2
