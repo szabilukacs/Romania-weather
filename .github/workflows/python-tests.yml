@@ -31,4 +31,5 @@ jobs:
       # 4️⃣ Futtassuk a teszteket
       - name: Run tests
         run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
           pytest -v tests/
