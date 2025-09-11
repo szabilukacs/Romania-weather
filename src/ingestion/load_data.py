@@ -31,7 +31,9 @@ def load_stations():
 
     print('Stations in Romania:', stations.count())
 
-    df_stations = stations.fetch(10)
+    df_stations = stations.fetch()
+
+    print(df_stations)
 
     # Convert date strings to datetime
     date_cols = ["hourly_start", "hourly_end", "daily_start", "daily_end", "monthly_start", "monthly_end"]
@@ -43,12 +45,22 @@ def load_stations():
     df_stations.replace({pd.NA: None}, inplace=True)
 
     # Convert DataFrame rows to list of tuples in the same column order as the table
-    records = [
-        (
+    records = []
+    for i, row in enumerate(df_stations.itertuples(index=False), start=1):
+        if pd.notna(row.wmo):
+            wmo_value = row.wmo
+        elif pd.notna(row.icao):
+            # Convert ICAO string to integer as fallback
+            wmo_value = int.from_bytes(row.icao.encode("utf-8"), "little") % 1000000
+        else:
+            # If both are missing, generate synthetic ID
+            wmo_value = 100000 + i
+
+        records.append((
             row.name,
             row.country,
             row.region,
-            row.wmo,
+            wmo_value,
             row.icao,
             row.latitude,
             row.longitude,
@@ -60,11 +72,10 @@ def load_stations():
             row.daily_end,
             row.monthly_start,
             row.monthly_end
-        )
-        for row in df_stations.itertuples(index=False)
-    ]
-    
+        ))
+
     execute_values(cur, INSERT_STATIONS, records)
+
 
     conn.commit()
     cur.close()

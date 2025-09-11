@@ -19,7 +19,7 @@ def main():
 
     create_tables()
     
-    load_stations()
+    load_stations() 
 
     load_weather_data()
 
