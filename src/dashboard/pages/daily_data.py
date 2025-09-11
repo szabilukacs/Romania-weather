@@ -14,9 +14,9 @@ import altair as alt
 from meteostat import Hourly
 from datetime import datetime
 
-from utils.utils import load_data_into_df
-from utils.queries import SELECT_STATION_DATA
-from utils.constants import COCO_CODES, DAILY_DAYS_SHIFT
+from src.utils.utils import load_data_into_df
+from src.utils.queries import SELECT_STATION_DATA
+from src.utils.constants import COCO_CODES, DAILY_DAYS_SHIFT
 
 def show_temperature():
     """Display daily temperature as a line chart."""

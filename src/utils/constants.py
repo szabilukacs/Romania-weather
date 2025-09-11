@@ -43,7 +43,7 @@ COLS_DAILY = ["station_id","time", "tavg", "tmin", "tmax", "prcp", "snow",
                "wdir", "wspd", "wpgt", "pres", "tsun"]
 
 # test
-REGIONS = ['HA', 'CV']
+REGIONS = ['HA']
 
 # Transylvani region
 # TODO: felosztani 2 percre majd DAG-ban limit miatt

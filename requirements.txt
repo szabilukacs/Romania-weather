@@ -1,0 +1,8 @@
+altair==5.5.0
+pandas==2.3.2
+psycopg2==2.9.10
+pydeck==0.9.1
+python-dotenv==1.1.1
+Requests==2.32.3
+streamlit==1.44.1
+meteostat==1.7.4
