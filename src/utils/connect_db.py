@@ -20,22 +20,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-# TODO: main-bol kiszedni, itt ezt rendberakni hasznalni a fgv-t
-# --- Create global connection ---
-try:
-    conn = psycopg2.connect(
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS,
-        host=DB_HOST,
-        port=DB_PORT
-    )
-    conn.autocommit = False
-    logging.info("Connected to PostgreSQL database successfully.")
-except Exception as e:
-    logging.error("Database connection failed", exc_info=True)
-    raise
-
 def connect_to_db():
     # --- Create global connection ---
     try:
@@ -52,3 +36,4 @@ def connect_to_db():
     except Exception as e:
         logging.error("Database connection failed", exc_info=True)
         raise
+

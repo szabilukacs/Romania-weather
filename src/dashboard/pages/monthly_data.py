@@ -3,7 +3,7 @@ import pandas as pd
 import altair as alt
 from datetime import datetime
 
-from utils.utils import load_data
+from utils.utils import load_data_into_df
 from utils.queries import SELECT_NAME_WMO_STATIONS
 from utils.constants import BLUE, ORANGE
 
@@ -123,7 +123,7 @@ def show_statistics(df_current: pd.DataFrame, df_last: pd.DataFrame, current_yea
 st.title("📊 Éves összehasonlítás – Idén vs Tavaly")
 
 # Stations dropdown
-stations = load_data(SELECT_NAME_WMO_STATIONS)
+stations = load_data_into_df(SELECT_NAME_WMO_STATIONS)
 station_name = st.selectbox("Choose a station:", stations["name"])
 station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
 
@@ -142,7 +142,7 @@ WHERE station_id = {station_id}
   AND time >= NOW() - INTERVAL '2 years'
 ORDER BY time ASC;
 """
-df = load_data(query)
+df = load_data_into_df(query)
 
 df["time"] = pd.to_datetime(df["time"])
 

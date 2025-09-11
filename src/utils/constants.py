@@ -32,3 +32,9 @@ COCO_CODES = {
 DAILY_DAYS_SHIFT = 14 
 BLUE = "#1f77b4"
 ORANGE = "#ff7f0e"
+
+ROMANIA_LAT = 45.9432
+ROMANIA_LONG = 24.9668
+MAP_ZOOM = 5.5
+
+REGIONS = ['HA', 'SM','MA','BH','SJ','CJ','BN','MU','AD','SI','HU','CV','BS']  # Hargita és Szatmár megye, pl.

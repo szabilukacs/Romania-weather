@@ -1,66 +1,56 @@
+"""
+Live Weather Map Visualization
+
+This script loads live weather data from weather stations and visualizes it on an interactive map using Streamlit and Pydeck. 
+Each station is displayed as a scatterplot point with a temperature label. Additional weather details are shown in tooltips 
+when hovering over a station.
+"""
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
-from utils.connect_db import connect_to_db
 
-# --- Load stations and latest daily data ---
-def load_data_into_df(query):
-    conn = connect_to_db()
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df
+from utils.utils import load_data_into_df
+from utils.queries import SELECT_STATIONS_AND_LATEST_DATA
+from utils.constants import ROMANIA_LAT, ROMANIA_LONG, MAP_ZOOM
 
 # --- Query: stations + latest live weather data ---
-query = """
-SELECT s.name, s.latitude, s.longitude,
-       w.temp, w.humidity, w.wind_speed, w.weather_description,
-        w.dt, w.feels_like, w.clouds, w.visibility, w.wind_deg, w.wind_gust, 
-        w.pressure, w.uvi, w.dew_point, w.weather_main, w.weather_description
-FROM stations s
-JOIN (
-    SELECT DISTINCT ON (station_id) *
-    FROM weather_live
-    ORDER BY station_id, dt DESC
-) w ON s.wmo = w.station_id;
-"""
+query = SELECT_STATIONS_AND_LATEST_DATA
 
-
+# Load data into a DataFrame
 df_stations = load_data_into_df(query)
 
-print(df_stations)
-
-# Feltételezzük, hogy a df_stations-ben van egy 'time' oszlop
+# Convert 'dt' column to datetime, coercing errors
 df_stations["dt"] = pd.to_datetime(df_stations["dt"], errors="coerce")
 
-# Formázzuk emberi olvashatóra (pl. 2025-09-09 15:00)
+# Format datetime to human-readable string
 df_stations["time_str"] = df_stations["dt"].dt.strftime("%Y-%m-%d %H:%M")
 
-# Pydeck Layer
+# Create a label column for temperature with 1 decimal place
+df_stations["label"] = df_stations["temp"].map(lambda x: f"{x:.1f}°C")
+
+# --- Pydeck Scatterplot Layer ---
 layer = pdk.Layer(
     "ScatterplotLayer",
     df_stations,
     get_position='[longitude, latitude]',
-    get_fill_color='[255, 0, 0, 160]',  # piros
+    get_fill_color='[255, 0, 0, 160]',  # red color
     get_radius=5000,  # radius in meters
     pickable=True
 )
 
-# Készítünk egy oszlopot a címkének, 1 tizedesjegy
-df_stations["label"] = df_stations["temp"].map(lambda x: f"{x:.1f}°C")
-
-# Text layer for temperature labels
+# --- Pydeck Text Layer for temperature labels ---
 text_layer = pdk.Layer(
     "TextLayer",
     df_stations,
     get_position='[longitude, latitude]',
     get_text="label",
     get_size=16,
-    get_color=[0, 0, 0],   # fekete szöveg
+    get_color=[0, 0, 0],  # black text
     get_alignment_baseline="'bottom'",
-    get_pixel_offset=[0, -5]  # 20 pixelrel felfelé toljuk a címkét
+    get_pixel_offset=[0, -5]  # offset text slightly above the marker
 )
 
-# Tooltip
+# --- Tooltip configuration ---
 tooltip = {
     "html": """
         <b>📍 Station:</b> {name}<br/>
@@ -79,20 +69,21 @@ tooltip = {
     "style": {"backgroundColor": "white", "color": "black"}
 }
 
-
-# Map
+# --- Create Pydeck map ---
 r = pdk.Deck(
     layers=[layer, text_layer],
     initial_view_state=pdk.ViewState(
-        latitude=45.9432,  # Romania középpont
-        longitude=24.9668,
-        zoom=5.5,
+        latitude=ROMANIA_LAT,  # center of Romania
+        longitude=ROMANIA_LONG,
+        zoom=MAP_ZOOM,
         pitch=0,
     ),
     tooltip=tooltip,
-    map_style="mapbox://styles/mapbox/light-v11"  # világos térkép
+    map_style="mapbox://styles/mapbox/light-v11"  # light map style
 )
 
+# Display map in Streamlit
 st.pydeck_chart(r)
 
-st.title("Live weather")
+# Display title
+st.title("Live Weather")

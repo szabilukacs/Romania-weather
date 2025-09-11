@@ -1,10 +1,11 @@
-
+import sys
 import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values
 import io
 
-from utils.connect_db import connect_to_db
+sys.path.append('../../')
+from src.utils.connect_db import connect_to_db 
 
 def get_start_date(row, cols=("hourly_start", "daily_start", "monthly_start")):
 
@@ -76,7 +77,7 @@ def calc_days_of_year(year: int):
     return days_in_year
 
 # --- Adatok betöltése ---
-def load_data(query):
+def load_data_into_df(query):
     conn = connect_to_db()
     df = pd.read_sql(query, conn)
     conn.close()

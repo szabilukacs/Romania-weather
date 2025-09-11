@@ -14,7 +14,7 @@ import altair as alt
 from meteostat import Hourly
 from datetime import datetime
 
-from utils.utils import load_data
+from utils.utils import load_data_into_df
 from utils.queries import SELECT_STATION_DATA
 from utils.constants import COCO_CODES, DAILY_DAYS_SHIFT
 
@@ -107,10 +107,9 @@ def show_coco():
 
 st.title("📅 Daily Weather Data")
 
-
-stations = load_data(SELECT_STATION_DATA)
+stations = load_data_into_df(SELECT_STATION_DATA)
 # Load station list
-stations = load_data(SELECT_STATION_DATA)
+stations = load_data_into_df(SELECT_STATION_DATA)
 station_name = st.selectbox("Choose a station:", stations["name"])
 station_id = stations.loc[
     stations["name"] == station_name, "wmo"
@@ -141,7 +140,7 @@ AND DATE(time) = '{selected_date}'
 ORDER BY time ASC;
 """
 
-df = load_data(query)
+df = load_data_into_df(query)
 
 if df.empty:
     st.warning("❌ Nincs adat a kiválasztott napra.")

@@ -4,7 +4,7 @@ import math
 import streamlit as st
 import altair as alt
 
-from utils.utils import calc_days_of_year, load_data
+from utils.utils import calc_days_of_year, load_data_into_df
 from utils.queries import SELECT_STATION_DATA
 
 def styled_progress(label, value):
@@ -87,7 +87,7 @@ def show_chart():
 
 
 # Állomás kiválasztása
-stations = load_data(SELECT_STATION_DATA)
+stations = load_data_into_df(SELECT_STATION_DATA)
 station_name = st.selectbox("Choose a station:", stations["name"])
 station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
 daily_start = stations.loc[stations["name"] == station_name, "daily_start"].values[0]
@@ -108,7 +108,7 @@ WHERE station_id = {station_id}
   AND EXTRACT(YEAR FROM time) = {year}
 ORDER BY time ASC;
 """
-df = load_data(query_select_days_data)
+df = load_data_into_df(query_select_days_data)
 
 # --- Adatok tisztítása ---
 df["time"] = pd.to_datetime(df["time"])
@@ -141,7 +141,7 @@ WHERE station_id = {station_id}
   AND EXTRACT(YEAR FROM time) = {current_year}
 ORDER BY time ASC;
 """
-df_current = load_data(query_select_days_data_last_year)
+df_current = load_data_into_df(query_select_days_data_last_year)
 
 # Calc current year means
 if not df_current.empty:

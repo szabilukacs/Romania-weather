@@ -1,32 +1,61 @@
+"""
+Weather Dashboard Visualization
+
+This script creates an interactive weather dashboard using Streamlit and Altair. Users can select a weather station
+and a date range to visualize daily average temperatures and precipitation. Statistical metrics are displayed as 
+cards above the charts.
+
+"""
 import streamlit as st
 import pandas as pd
 import altair as alt
-
 import sys
+
 sys.path.append('../')
 # sys.path.insert(1, '/src/dashboard/')
+from utils.utils import load_data_into_df
+from utils.queries import SELECT_STATIONS_DROPDOWN
 
-# TODO: kód tisztitása mindenhol, itt is, yearly megvan kb.
-# TODO: kulon adatbazis api-s hivasoknak, oda menteni oket, dag-bam jad jo lesz  ameghivas
-# TODO: live stream berakasa
+def show_temp():
+    """
+    Display a line chart of daily average temperatures using Altair.
+    """
+    temp_chart = (
+        alt.Chart(df)
+        .mark_line(color="#FF4B4B")
+        .encode(
+            x=alt.X("time:T", title="Idő"),
+            y=alt.Y("tavg:Q", title="Hőmérséklet (°C)"),
+            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("tavg:Q", title="Hőmérséklet °C")]
+        )
+        .properties(width=700, height=300, title="📈 Napi átlaghőmérséklet")
+    )
+    st.altair_chart(temp_chart, use_container_width=True)
 
-from utils.connect_db import connect_to_db
-
-# Lekérdezés futtatása
-def load_data(query):
-    conn = connect_to_db()
-    df = pd.read_sql(query, conn)
-    conn.close()
-    return df
+def show_prcp():
+    """
+    Display a bar chart of daily precipitation using Altair.
+    """
+    prcp_chart = (
+        alt.Chart(df)
+        .mark_bar(color="#1F77B4")
+        .encode(
+            x=alt.X("time:T", title="Idő"),
+            y=alt.Y("prcp:Q", title="Csapadék (mm)"),
+            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("prcp:Q", title="Csapadék mm")]
+        )
+        .properties(width=700, height=200, title="🌧 Napi csapadék",padding={"top": 30, "bottom": 10, "left": 10, "right": 10})
+    )
+    st.altair_chart(prcp_chart, use_container_width=True)
 
 st.title("🌦 Weather Dashboard")
 
-# Dropdown station választáshoz
-stations = load_data("SELECT wmo, name FROM stations;")
+# --- Dropdown to select station ---
+stations = load_data_into_df(SELECT_STATIONS_DROPDOWN)
 station_name = st.selectbox("Choose a station:", stations["name"])
 station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
 
-# Időszak választó
+# --- Date range picker ---
 today = pd.Timestamp.today().date()
 start_date = st.date_input("Start date:", value=today - pd.Timedelta(days=37), max_value=today)
 end_date = st.date_input("End date:", value=today - pd.Timedelta(days=7), max_value=today)
@@ -34,7 +63,7 @@ end_date = st.date_input("End date:", value=today - pd.Timedelta(days=7), max_va
 if start_date > end_date:
     st.error("Start date must be before end date!")
 else:
-        # --- Adatok lekérdezése a megadott intervallumra ---
+    # --- Query weather data for the selected date range ---
     query = f"""
     SELECT time, tavg, tmin, tmax, prcp
     FROM weather_data_daily
@@ -42,10 +71,10 @@ else:
       AND time >= '{start_date}' AND time <= '{end_date}'
     ORDER BY time ASC;
     """
-    df = load_data(query)
+    df = load_data_into_df(query)
     df["time"] = pd.to_datetime(df["time"])
     
-    # --- Statisztikai kártyák ---
+    # --- Statistical metric cards ---
     col1, col2, col3, col4 = st.columns(4)
 
     avg_temp = df['tavg'].mean()
@@ -62,33 +91,10 @@ else:
     with col4:
         st.metric("🌧 Teljes csapadék", f"{total_precip:.1f} mm")
 
-    # --- Vonaldiagram: átlaghőmérséklet ---
-    temp_chart = (
-        alt.Chart(df)
-        .mark_line(color="#FF4B4B")
-        .encode(
-            x=alt.X("time:T", title="Idő"),
-            y=alt.Y("tavg:Q", title="Hőmérséklet (°C)"),
-            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("tavg:Q", title="Hőmérséklet °C")]
-        )
-        .properties(width=700, height=300, title="📈 Napi átlaghőmérséklet")
-    )
+    show_temp()
 
-    # --- Oszlopdiagram: csapadék ---
-    prcp_chart = (
-        alt.Chart(df)
-        .mark_bar(color="#1F77B4")
-        .encode(
-            x=alt.X("time:T", title="Idő"),
-            y=alt.Y("prcp:Q", title="Csapadék (mm)"),
-            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("prcp:Q", title="Csapadék mm")]
-        )
-        .properties(width=700, height=200, title="🌧 Napi csapadék")
-    )
+    show_prcp()
 
-    # Megjelenítés
-    st.altair_chart(temp_chart, use_container_width=True)
-    st.divider()
-    st.altair_chart(prcp_chart, use_container_width=True)
+   
 
 

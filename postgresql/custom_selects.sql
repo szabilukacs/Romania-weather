@@ -1,4 +1,8 @@
+select * from stations where name = 'Buzau';
+
 select * from stations;
+
+select * from weather_data_hourly;
 
 select * from weather_data_hourly where time > '2010-06-15' and snow > 1;
 
