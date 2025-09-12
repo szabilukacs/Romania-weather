@@ -15,7 +15,9 @@ DB_NAME = os.getenv("DB_NAME")
 CREATE_TABLES_PATH = "postgreSQL/create_tables.sql"
 
 # --- Setup logging ---
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 
 def connect_to_db():

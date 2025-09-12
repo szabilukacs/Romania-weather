@@ -74,8 +74,12 @@ station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
 
 # --- Date range picker ---
 today = pd.Timestamp.today().date()
-start_date = st.date_input("Start date:", value=today - pd.Timedelta(days=37), max_value=today)
-end_date = st.date_input("End date:", value=today - pd.Timedelta(days=7), max_value=today)
+start_date = st.date_input(
+    "Start date:", value=today - pd.Timedelta(days=37), max_value=today
+)
+end_date = st.date_input(
+    "End date:", value=today - pd.Timedelta(days=7), max_value=today
+)
 
 if start_date > end_date:
     st.error("Start date must be before end date!")

@@ -82,7 +82,9 @@ def show_prcp(df_compare: pd.DataFrame, month: int, colors: list[str]) -> None:
     st.altair_chart(prcp_chart, use_container_width=True)
 
 
-def show_statistics(df_current: pd.DataFrame, df_last: pd.DataFrame, current_year: int) -> None:
+def show_statistics(
+    df_current: pd.DataFrame, df_last: pd.DataFrame, current_year: int
+) -> None:
     """
     Display statistical summary metrics comparing:
       - Average temperature (°C) between the current and previous year

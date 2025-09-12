@@ -15,7 +15,9 @@ MIN_TEMP = -60
 MAX_TEMP = 90
 
 
-def clean_and_validate_hours(df_hourly: pd.DataFrame, temp_col: str = "temp") -> pd.DataFrame:
+def clean_and_validate_hours(
+    df_hourly: pd.DataFrame, temp_col: str = "temp"
+) -> pd.DataFrame:
     """
     Clean and validate hourly weather data.
 
@@ -28,7 +30,9 @@ def clean_and_validate_hours(df_hourly: pd.DataFrame, temp_col: str = "temp") ->
 
     """
     df_hourly = rename_index_to_time(df_hourly)
-    df_hourly["time"] = pd.to_datetime(df_hourly["time"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
+    df_hourly["time"] = pd.to_datetime(
+        df_hourly["time"], format="%Y-%m-%d %H:%M:%S", errors="coerce"
+    )
     df_hourly["time"] = df_hourly["time"].where(df_hourly["time"].notna(), None)
 
     # Identify non-time columns
@@ -45,10 +49,14 @@ def clean_and_validate_hours(df_hourly: pd.DataFrame, temp_col: str = "temp") ->
 
     # Filter temperature column if exists
     if temp_col in df_hourly.columns:
-        df_hourly = df_hourly[(df_hourly[temp_col] >= MIN_TEMP) & (df_hourly[temp_col] <= MAX_TEMP)]
+        df_hourly = df_hourly[
+            (df_hourly[temp_col] >= MIN_TEMP) & (df_hourly[temp_col] <= MAX_TEMP)
+        ]
     # --- Convert 'coco' column to int safely ---
     if "coco" in df_hourly.columns:
-        df_hourly["coco"] = pd.to_numeric(df_hourly["coco"], errors="coerce").astype("Int64")  # nullable int type
+        df_hourly["coco"] = pd.to_numeric(df_hourly["coco"], errors="coerce").astype(
+            "Int64"
+        )  # nullable int type
 
     return df_hourly
 

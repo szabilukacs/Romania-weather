@@ -82,7 +82,9 @@ def load_stations(conn):
     n_kept = int(valid_mask.sum())
     n_dropped = n_total - n_kept
 
-    print(f"Stations total: {n_total}, kept (valid wmo): {n_kept}, dropped: {n_dropped}")
+    print(
+        f"Stations total: {n_total}, kept (valid wmo): {n_kept}, dropped: {n_dropped}"
+    )
 
     if n_dropped:
         # show a few example offending values for debugging
@@ -91,7 +93,9 @@ def load_stations(conn):
 
     # Convert DataFrame rows to list of tuples in the same column order as the table
     records = []
-    for i, row in enumerate(df_stations.loc[valid_mask].itertuples(index=False), start=1):
+    for i, row in enumerate(
+        df_stations.loc[valid_mask].itertuples(index=False), start=1
+    ):
         # row.wmo is now safe to convert
         try:
             # convert robustly (handles "123", 123.0, "123.0", etc.)

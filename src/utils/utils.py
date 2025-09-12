@@ -42,7 +42,9 @@ def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
 
     # Convert DataFrame rows to list of tuples, NaN -> None
     records = [
-        tuple(getattr(row, col) if pd.notna(getattr(row, col)) else None for col in cols)
+        tuple(
+            getattr(row, col) if pd.notna(getattr(row, col)) else None for col in cols
+        )
         for row in df.itertuples(index=False)
     ]
 
@@ -109,7 +111,9 @@ def calc_days_of_year(year: int):
         days_in_year = today.day_of_year
     else:
         # Completed year → 365 or 366
-        days_in_year = 366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
+        days_in_year = (
+            366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
+        )
     return days_in_year
 
 

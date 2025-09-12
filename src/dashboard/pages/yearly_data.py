@@ -31,21 +31,33 @@ def styled_progress(label, value):
 def show_statistics():
     col1, col2, col3 = st.columns(3)
     if not math.isnan(avg_tavg):
-        delta_temp = f"{avg_tavg - avg_tavg_curr:+.1f} °C vs {current_year}" if avg_tavg_curr is not None else None
+        delta_temp = (
+            f"{avg_tavg - avg_tavg_curr:+.1f} °C vs {current_year}"
+            if avg_tavg_curr is not None
+            else None
+        )
         col1.metric("🌡 Átlaghőmérséklet", f"{avg_tavg:.1f} °C", delta=delta_temp)
 
     if not int(total_precip) == 0:
         col2.metric(
             "🌧 Teljes csapadék",
             f"{total_precip:.1f} mm",
-            delta=(f"{total_precip - total_precip_curr:+.1f} mm vs {current_year}" if total_precip_curr else None),
+            delta=(
+                f"{total_precip - total_precip_curr:+.1f} mm vs {current_year}"
+                if total_precip_curr
+                else None
+            ),
         )
 
     if not int(rainy_days) == 0:
         col3.metric(
             "☔ Csapadékos napok",
             rainy_days,
-            delta=(f"{rainy_days - rainy_days_curr:+d} vs {current_year}" if rainy_days_curr else None),
+            delta=(
+                f"{rainy_days - rainy_days_curr:+d} vs {current_year}"
+                if rainy_days_curr
+                else None
+            ),
         )
 
 

@@ -6,7 +6,9 @@ from meteostat import Stations
 from src.celan_and_validate.clean_and_validate import is_valid_wmo
 
 
-def fetch_and_store_weather(lat: float, lon: float, station_id: int, conn, api_key: str) -> None:
+def fetch_and_store_weather(
+    lat: float, lon: float, station_id: int, conn, api_key: str
+) -> None:
     """
     Fetch current weather from OpenWeather API and store it in PostgreSQL.
     Args:
@@ -115,7 +117,9 @@ def fetch_weather_nearby(api_key, conn, regions: list[str]):
         # --- Filter out invalid WMOs ---
         valid_mask = stations["wmo"].apply(is_valid_wmo)
         n_total, n_kept = len(stations), int(valid_mask.sum())
-        print(f"Stations total: {n_total}, kept valid WMO: {n_kept}, dropped: {n_total - n_kept}")
+        print(
+            f"Stations total: {n_total}, kept valid WMO: {n_kept}, dropped: {n_total - n_kept}"
+        )
 
         stations = stations.loc[valid_mask]
 
@@ -125,7 +129,9 @@ def fetch_weather_nearby(api_key, conn, regions: list[str]):
             station_lon = row["longitude"]
             name = row["name"]
 
-            print(f"🌍 Fetching: {name} (ID={station_id}, lat={station_lat}, lon={station_lon})")
+            print(
+                f"🌍 Fetching: {name} (ID={station_id}, lat={station_lat}, lon={station_lon})"
+            )
 
             try:
                 fetch_and_store_weather(
