@@ -1,10 +1,13 @@
 """
 Live Weather Map Visualization
 
-This script loads live weather data from weather stations and visualizes it on an interactive map using Streamlit and Pydeck. 
-Each station is displayed as a scatterplot point with a temperature label. Additional weather details are shown in tooltips 
+This script loads live weather data from weather stations and visualizes it
+on an interactive map using Streamlit and Pydeck.
+Each station is displayed as a scatterplot point with a temperature label.
+Additional weather details are shown in tooltips
 when hovering over a station.
 """
+
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
@@ -32,22 +35,22 @@ df_stations["label"] = df_stations["temp"].map(lambda x: f"{x:.1f}°C")
 layer = pdk.Layer(
     "ScatterplotLayer",
     df_stations,
-    get_position='[longitude, latitude]',
-    get_fill_color='[255, 0, 0, 160]',  # red color
+    get_position="[longitude, latitude]",
+    get_fill_color="[255, 0, 0, 160]",  # red color
     get_radius=5000,  # radius in meters
-    pickable=True
+    pickable=True,
 )
 
 # --- Pydeck Text Layer for temperature labels ---
 text_layer = pdk.Layer(
     "TextLayer",
     df_stations,
-    get_position='[longitude, latitude]',
+    get_position="[longitude, latitude]",
     get_text="label",
     get_size=16,
     get_color=[0, 0, 0],  # black text
     get_alignment_baseline="'bottom'",
-    get_pixel_offset=[0, -5]  # offset text slightly above the marker
+    get_pixel_offset=[0, -5],  # offset text slightly above the marker
 )
 
 # --- Tooltip configuration ---
@@ -66,7 +69,7 @@ tooltip = {
         <b>🌡 Dew Point:</b> {dew_point} °C<br/>
         <b>🌦 Condition:</b> {weather_main} ({weather_description})
     """,
-    "style": {"backgroundColor": "white", "color": "black"}
+    "style": {"backgroundColor": "white", "color": "black"},
 }
 
 # --- Create Pydeck map ---
@@ -79,7 +82,7 @@ r = pdk.Deck(
         pitch=0,
     ),
     tooltip=tooltip,
-    map_style="mapbox://styles/mapbox/light-v11"  # light map style
+    map_style="mapbox://styles/mapbox/light-v11",  # light map style
 )
 
 # Display map in Streamlit

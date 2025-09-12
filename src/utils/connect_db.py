@@ -12,13 +12,11 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
 
-CREATE_TABLES_PATH  = "postgreSQL/create_tables.sql"
+CREATE_TABLES_PATH = "postgreSQL/create_tables.sql"
 
 # --- Setup logging ---
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
 
 def connect_to_db():
     # --- Create global connection ---
@@ -28,12 +26,11 @@ def connect_to_db():
             user=DB_USER,
             password=DB_PASS,
             host=DB_HOST,
-            port=DB_PORT
+            port=DB_PORT,
         )
         conn.autocommit = False
         logging.info("Connected to PostgreSQL database successfully.")
         return conn
-    except Exception as e:
+    except Exception:
         logging.error("Database connection failed", exc_info=True)
         raise
-

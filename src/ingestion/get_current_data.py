@@ -5,6 +5,7 @@ from meteostat import Stations
 
 from src.celan_and_validate.clean_and_validate import is_valid_wmo
 
+
 def fetch_and_store_weather(lat: float, lon: float, station_id: int, conn, api_key: str) -> None:
     """
     Fetch current weather from OpenWeather API and store it in PostgreSQL.
@@ -68,10 +69,11 @@ def fetch_and_store_weather(lat: float, lon: float, station_id: int, conn, api_k
     VALUES (
         %(station_id)s,
         %(lat)s, %(lon)s, %(timezone)s, %(timezone_offset)s,
-        %(dt)s, %(sunrise)s, %(sunset)s, %(temp)s, %(feels_like)s, %(pressure)s,
-        %(humidity)s, %(dew_point)s, %(uvi)s, %(clouds)s, %(visibility)s,
-        %(wind_speed)s, %(wind_deg)s, %(wind_gust)s,
-        %(weather_id)s, %(weather_main)s, %(weather_description)s, %(weather_icon)s
+        %(dt)s, %(sunrise)s, %(sunset)s, %(temp)s, %(feels_like)s,
+        %(pressure)s, %(humidity)s, %(dew_point)s, %(uvi)s,
+        %(clouds)s, %(visibility)s, %(wind_speed)s, %(wind_deg)s,
+        %(wind_gust)s, %(weather_id)s, %(weather_main)s,
+        %(weather_description)s, %(weather_icon)s
     );
     """
 
@@ -85,26 +87,25 @@ def fetch_and_store_weather(lat: float, lon: float, station_id: int, conn, api_k
 
 def fetch_weather_nearby(api_key, conn, regions: list[str]):
     """
-    Fetch the nearest `n_stations` to the given coordinates (lat, lon) and store their current weather data.
-    If a list of regions is provided, only stations from those regions will be processed.
+    Fetch the nearest `n_stations` to the given coordinates (lat, lon) and
+    store their current weather data. If a list of regions is provided,
+    only stations from those regions will be processed.
 
     Args:
-        lat (float): Latitude of the location.
-        lon (float): Longitude of the location.
-        conn: Database connection object.
         api_key (str): API key for fetching weather data.
-        n_stations (int, optional): Number of nearest stations to fetch. Defaults to 5.
-        regions (list[str], optional): List of region codes to filter stations. Defaults to None.
+        conn: Database connection object.
+        regions (list[str]): List of region codes to
+            filter stations. Defaults to None.
     """
     try:
-        Stations.cache_dir = 'meteostat/cache'
+        Stations.cache_dir = "meteostat/cache"
         stations_obj = Stations()
 
         # If regions list is provided, filter stations by each region
         if regions:
             dfs = []
             for region_code in regions:
-                region_stations = stations_obj.region('RO',region_code).fetch()
+                region_stations = stations_obj.region("RO", region_code).fetch()
                 dfs.append(region_stations)
             stations = pd.concat(dfs, ignore_index=True)
         else:
@@ -112,7 +113,7 @@ def fetch_weather_nearby(api_key, conn, regions: list[str]):
             return
 
         # --- Filter out invalid WMOs ---
-        valid_mask = stations['wmo'].apply(is_valid_wmo)
+        valid_mask = stations["wmo"].apply(is_valid_wmo)
         n_total, n_kept = len(stations), int(valid_mask.sum())
         print(f"Stations total: {n_total}, kept valid WMO: {n_kept}, dropped: {n_total - n_kept}")
 
@@ -132,7 +133,7 @@ def fetch_weather_nearby(api_key, conn, regions: list[str]):
                     lon=station_lon,
                     station_id=station_id,
                     conn=conn,
-                    api_key=api_key
+                    api_key=api_key,
                 )
             except Exception as e:
                 print(f"❌ Error at station {name}: {e}")

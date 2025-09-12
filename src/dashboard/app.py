@@ -1,20 +1,24 @@
 """
 Weather Dashboard Visualization
 
-This script creates an interactive weather dashboard using Streamlit and Altair. Users can select a weather station
-and a date range to visualize daily average temperatures and precipitation. Statistical metrics are displayed as 
+This script creates an interactive weather dashboard
+using Streamlit and Altair. Users can select a weather station
+and a date range to visualize daily average temperatures
+and precipitation. Statistical metrics are displayed as
 cards above the charts.
-
 """
+
+import sys
 import streamlit as st
 import pandas as pd
 import altair as alt
-import sys
 
-sys.path.append('../')
-# sys.path.insert(1, '/src/dashboard/')
 from utils.utils import load_data_into_df
 from utils.queries import SELECT_STATIONS_DROPDOWN
+
+sys.path.append("../")
+# sys.path.insert(1, '/src/dashboard/')
+
 
 def show_temp():
     """
@@ -26,11 +30,15 @@ def show_temp():
         .encode(
             x=alt.X("time:T", title="Idő"),
             y=alt.Y("tavg:Q", title="Hőmérséklet (°C)"),
-            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("tavg:Q", title="Hőmérséklet °C")]
+            tooltip=[
+                alt.Tooltip("time:T", title="Dátum"),
+                alt.Tooltip("tavg:Q", title="Hőmérséklet °C"),
+            ],
         )
         .properties(width=700, height=300, title="📈 Napi átlaghőmérséklet")
     )
     st.altair_chart(temp_chart, use_container_width=True)
+
 
 def show_prcp():
     """
@@ -42,11 +50,20 @@ def show_prcp():
         .encode(
             x=alt.X("time:T", title="Idő"),
             y=alt.Y("prcp:Q", title="Csapadék (mm)"),
-            tooltip=[alt.Tooltip("time:T", title="Dátum"), alt.Tooltip("prcp:Q", title="Csapadék mm")]
+            tooltip=[
+                alt.Tooltip("time:T", title="Dátum"),
+                alt.Tooltip("prcp:Q", title="Csapadék mm"),
+            ],
         )
-        .properties(width=700, height=200, title="🌧 Napi csapadék",padding={"top": 30, "bottom": 10, "left": 10, "right": 10})
+        .properties(
+            width=700,
+            height=200,
+            title="🌧 Napi csapadék",
+            padding={"top": 30, "bottom": 10, "left": 10, "right": 10},
+        )
     )
     st.altair_chart(prcp_chart, use_container_width=True)
+
 
 st.title("🌦 Weather Dashboard")
 
@@ -73,14 +90,14 @@ else:
     """
     df = load_data_into_df(query)
     df["time"] = pd.to_datetime(df["time"])
-    
+
     # --- Statistical metric cards ---
     col1, col2, col3, col4 = st.columns(4)
 
-    avg_temp = df['tavg'].mean()
-    min_temp = df['tavg'].min()
-    max_temp = df['tavg'].max()
-    total_precip = df['prcp'].sum()
+    avg_temp = df["tavg"].mean()
+    min_temp = df["tavg"].min()
+    max_temp = df["tavg"].max()
+    total_precip = df["prcp"].sum()
 
     with col1:
         st.metric("🌡 Átlaghőmérséklet", f"{avg_temp:.1f} °C")
@@ -94,7 +111,3 @@ else:
     show_temp()
 
     show_prcp()
-
-   
-
-

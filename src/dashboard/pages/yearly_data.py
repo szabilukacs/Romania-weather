@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
 import math
-import streamlit as st
 import altair as alt
 
 from utils.utils import calc_days_of_year, load_data_into_df
 from utils.queries import SELECT_STATION_DATA
+
 
 def styled_progress(label, value):
     """Színezett progress bar Streamlitben"""
@@ -15,14 +15,18 @@ def styled_progress(label, value):
     elif value < 80:
         color = "orange"
 
-    st.markdown(f"""
+    st.markdown(
+        f"""
         <div style="margin-bottom:10px">
             <b>{label}: {value:.1f}%</b>
             <div style="background-color:#ddd; border-radius:10px; height:20px; width:100%">
                 <div style="background-color:{color}; width:{value}%; height:100%; border-radius:10px"></div>
             </div>
         </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
+
 
 def show_statistics():
     col1, col2, col3 = st.columns(3)
@@ -34,15 +38,16 @@ def show_statistics():
         col2.metric(
             "🌧 Teljes csapadék",
             f"{total_precip:.1f} mm",
-            delta=f"{total_precip - total_precip_curr:+.1f} mm vs {current_year}" if total_precip_curr else None
+            delta=(f"{total_precip - total_precip_curr:+.1f} mm vs {current_year}" if total_precip_curr else None),
         )
 
     if not int(rainy_days) == 0:
         col3.metric(
             "☔ Csapadékos napok",
             rainy_days,
-            delta=f"{rainy_days - rainy_days_curr:+d} vs {current_year}" if rainy_days_curr else None
+            delta=(f"{rainy_days - rainy_days_curr:+d} vs {current_year}" if rainy_days_curr else None),
         )
+
 
 def show_extrem_values():
     if coldest_day is not None or warmest_day is not None:
@@ -50,12 +55,11 @@ def show_extrem_values():
         c1, c2 = st.columns(2)
 
         if coldest_day is not None:
-            c1.metric("❄️ Leghidegebb nap", 
-                    f"{coldest_day['tmin']:.1f} °C" )
+            c1.metric("❄️ Leghidegebb nap", f"{coldest_day['tmin']:.1f} °C")
 
         if warmest_day is not None:
-            c2.metric("☀️ Legmelegebb nap", 
-                    f"{warmest_day['tmax']:.1f} °C")
+            c2.metric("☀️ Legmelegebb nap", f"{warmest_day['tmax']:.1f} °C")
+
 
 def show_coverage():
     st.subheader("📊 Adat lefedettség")
@@ -64,6 +68,7 @@ def show_coverage():
         styled_progress("🌡 Hőmérséklet lefedettség", tavg_coverage)
     with col2:
         styled_progress("🌧 Csapadék lefedettség", prcp_coverage)
+
 
 def show_chart():
     if not df_tavg.empty:
@@ -74,13 +79,9 @@ def show_chart():
             .encode(
                 x=alt.X("time:O", title="Nap az évből"),
                 y=alt.Y("tavg:Q", title="Átlaghőmérséklet (°C)"),
-                tooltip=["time", "tavg"]
+                tooltip=["time", "tavg"],
             )
-            .properties(
-                title=f"{year} napi átlaghőmérsékletei",
-                width=700,
-                height=300
-            )
+            .properties(title=f"{year} napi átlaghőmérsékletei", width=700, height=300)
         )
 
         st.altair_chart(daily_temp_chart, use_container_width=True)
@@ -95,7 +96,7 @@ daily_start = stations.loc[stations["name"] == station_name, "daily_start"].valu
 # Év kiválasztása
 year = st.selectbox(
     "Válassz egy évet:",
-    list(reversed(range(daily_start.year, pd.Timestamp.now().year + 1)))
+    list(reversed(range(daily_start.year, pd.Timestamp.now().year + 1))),
 )
 
 current_year = pd.Timestamp.today().year
@@ -128,7 +129,7 @@ rainy_days = df[df["prcp"] > 0].shape[0]
 coldest_day = df.loc[df["tmin"].idxmin()] if not df["tmin"].isna().all() else None
 warmest_day = df.loc[df["tmax"].idxmax()] if not df["tmax"].isna().all() else None
 
-df_tavg = df[["time","tavg"]]
+df_tavg = df[["time", "tavg"]]
 df_tavg["time"] = df_tavg["time"].dt.dayofyear
 
 # --- Markdown összegzés ---

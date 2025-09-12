@@ -21,7 +21,7 @@ SELECT_NAME_WMO_STATIONS = "SELECT wmo, name FROM stations;"
 SELECT_STATIONS_AND_LATEST_DATA = """
 SELECT s.name, s.latitude, s.longitude,
        w.temp, w.humidity, w.wind_speed, w.weather_description,
-        w.dt, w.feels_like, w.clouds, w.visibility, w.wind_deg, w.wind_gust, 
+        w.dt, w.feels_like, w.clouds, w.visibility, w.wind_deg, w.wind_gust,
         w.pressure, w.uvi, w.dew_point, w.weather_main, w.weather_description
 FROM stations s
 JOIN (

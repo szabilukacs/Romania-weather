@@ -29,7 +29,7 @@ COCO_CODES = {
     27: "Storm",
 }
 
-DAILY_DAYS_SHIFT = 14 
+DAILY_DAYS_SHIFT = 14
 BLUE = "#1f77b4"
 ORANGE = "#ff7f0e"
 
@@ -37,13 +37,38 @@ ROMANIA_LAT = 45.9432
 ROMANIA_LONG = 24.9668
 MAP_ZOOM = 5.5
 
-COLS_HOURLY = ["station_id","time", "temp", "dwpt", "rhum", "prcp", "snow",
-        "wdir", "wspd", "wpgt", "pres", "tsun", "coco"]
-COLS_DAILY = ["station_id","time", "tavg", "tmin", "tmax", "prcp", "snow",
-               "wdir", "wspd", "wpgt", "pres", "tsun"]
+COLS_HOURLY = [
+    "station_id",
+    "time",
+    "temp",
+    "dwpt",
+    "rhum",
+    "prcp",
+    "snow",
+    "wdir",
+    "wspd",
+    "wpgt",
+    "pres",
+    "tsun",
+    "coco",
+]
+COLS_DAILY = [
+    "station_id",
+    "time",
+    "tavg",
+    "tmin",
+    "tmax",
+    "prcp",
+    "snow",
+    "wdir",
+    "wspd",
+    "wpgt",
+    "pres",
+    "tsun",
+]
 
 # test
-REGIONS = ['HA']
+REGIONS = ["HA"]
 
 # Transylvani region
 # TODO: felosztani 2 percre majd DAG-ban limit miatt

@@ -1,9 +1,10 @@
 """
 Data Cleaning and Validation for Weather Data
 
-This module provides functions to clean and validate hourly, daily weather data.
-It ensures that datetime values are properly parsed, removes rows with all missing or zero values,
-and validates temperature columns against defined realistic bounds.
+This module provides functions to clean and validate hourly, daily weather
+data. It ensures that datetime values are properly parsed, removes rows
+with all missing or zero values, and validates temperature columns
+against defined realistic bounds.
 """
 
 import pandas as pd
@@ -12,6 +13,7 @@ from src.utils.utils import rename_index_to_time
 # --- Constants: temperature limits in Celsius ---
 MIN_TEMP = -60
 MAX_TEMP = 90
+
 
 def clean_and_validate_hours(df_hourly: pd.DataFrame, temp_col: str = "temp") -> pd.DataFrame:
     """
@@ -50,6 +52,7 @@ def clean_and_validate_hours(df_hourly: pd.DataFrame, temp_col: str = "temp") ->
 
     return df_hourly
 
+
 def clean_and_validate_days(df: pd.DataFrame, temp_col: str = "tavg") -> pd.DataFrame:
     """
     Clean and validate daily weather data.
@@ -66,8 +69,8 @@ def clean_and_validate_days(df: pd.DataFrame, temp_col: str = "tavg") -> pd.Data
     df["time"] = pd.to_datetime(df["time"]).dt.date
 
     # Replace all NaN/NaT with Python None
-    df = df.where(pd.notna(df), None) 
-    df = df.astype(object)              
+    df = df.where(pd.notna(df), None)
+    df = df.astype(object)
 
     # Identify non-time columns
     cols_to_check = df.columns.difference(["time"])
@@ -86,10 +89,11 @@ def clean_and_validate_days(df: pd.DataFrame, temp_col: str = "tavg") -> pd.Data
 
     return df
 
+
 def is_valid_wmo(wmo) -> bool:
     """
-    Return True if `wmo` is a valid numeric WMO identifier that can be used as int.
-    This filters out None, pd.NA, NaN, the literal "<NA>" string, empty strings,
+    Return True if `wmo` is a valid numeric WMO id that can be used as int.
+    This filters out None, pd. NaN, the literal "<NA>" string, empty strings,
     and any non-numeric values (except float-like integers like "123.0").
     """
     # explicit None / pandas NA / numpy.nan check
@@ -118,5 +122,3 @@ def is_valid_wmo(wmo) -> bool:
         return False
     except Exception:
         return False
-
-

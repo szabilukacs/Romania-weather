@@ -7,3 +7,5 @@ Requests==2.32.3
 streamlit==1.44.1
 meteostat==1.7.4
 pytest==8.4.2
+flake8==7.3.0
+black==25.1.0

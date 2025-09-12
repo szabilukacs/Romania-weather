@@ -4,8 +4,10 @@ import psycopg2
 from psycopg2.extras import execute_values
 import io
 
-sys.path.append('../../')
-from src.utils.connect_db import connect_to_db 
+from src.utils.connect_db import connect_to_db
+
+sys.path.append("../../")
+
 
 def get_start_date(row, cols=("hourly_start", "daily_start")):
     """
@@ -16,11 +18,13 @@ def get_start_date(row, cols=("hourly_start", "daily_start")):
 
     return min(hourly_start, daily_start)
 
+
 def rename_index_to_time(df, new_name="time"):
     """
     Reset DataFrame index and rename it to 'time' (or specified name).
     """
     return df.reset_index().rename(columns={"index": new_name})
+
 
 def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
     """
@@ -36,7 +40,7 @@ def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
     df = df[cols].where(pd.notna(df[cols]), None)
     df = df[cols].astype(object)  # force object dtype so None marad
 
-     # Convert DataFrame rows to list of tuples, NaN -> None
+    # Convert DataFrame rows to list of tuples, NaN -> None
     records = [
         tuple(getattr(row, col) if pd.notna(getattr(row, col)) else None for col in cols)
         for row in df.itertuples(index=False)
@@ -44,7 +48,13 @@ def prepare_to_records(df: pd.DataFrame, station_id: int, cols: list):
 
     return records, df
 
-def copy_to_db(df_hourly: pd.DataFrame, conn: psycopg2.extensions.connection, station_id: int, cols: list):
+
+def copy_to_db(
+    df_hourly: pd.DataFrame,
+    conn: psycopg2.extensions.connection,
+    station_id: int,
+    cols: list,
+):
     """
     Insert hourly data into the database using COPY for fast performance.
     """
@@ -64,11 +74,18 @@ def copy_to_db(df_hourly: pd.DataFrame, conn: psycopg2.extensions.connection, st
                 )
                 FROM STDIN WITH (FORMAT CSV, NULL '');
             """,
-            file=buffer
+            file=buffer,
         )
     conn.commit()
 
-def insert_into_db(df: pd.DataFrame, conn: psycopg2.extensions.connection, station_id: int, insert_sql: str, cols: list): 
+
+def insert_into_db(
+    df: pd.DataFrame,
+    conn: psycopg2.extensions.connection,
+    station_id: int,
+    insert_sql: str,
+    cols: list,
+):
     """
     Insert data into the database using execute_values.
     """
@@ -78,6 +95,7 @@ def insert_into_db(df: pd.DataFrame, conn: psycopg2.extensions.connection, stati
         execute_values(cur, insert_sql, records)
 
     conn.commit()
+
 
 def calc_days_of_year(year: int):
     """
@@ -93,6 +111,7 @@ def calc_days_of_year(year: int):
         # Completed year → 365 or 366
         days_in_year = 366 if pd.Timestamp(year=year, month=12, day=31).is_leap_year else 365
     return days_in_year
+
 
 def load_data_into_df(query):
     """

@@ -4,13 +4,22 @@ from meteostat import Stations, Daily, Hourly
 from psycopg2.extras import execute_values
 
 from src.utils.utils import get_start_date, copy_to_db, insert_into_db
-from src.utils.queries import INSERT_STATIONS,SELEC_STATION_START_VALUES, INSERT_WEATHER_DAILY
-from src.celan_and_validate.clean_and_validate import clean_and_validate_hours, clean_and_validate_days, is_valid_wmo
+from src.utils.queries import (
+    INSERT_STATIONS,
+    SELEC_STATION_START_VALUES,
+    INSERT_WEATHER_DAILY,
+)
+from src.celan_and_validate.clean_and_validate import (
+    clean_and_validate_hours,
+    clean_and_validate_days,
+    is_valid_wmo,
+)
 from src.utils.constants import REGIONS, COLS_HOURLY, COLS_DAILY
+
 
 def create_tables(conn):
     """
-    Create all database tables using the SQL file located at 
+    Create all database tables using the SQL file located at
     `postgresql/create_tables.sql`.
 
     Args:
@@ -20,6 +29,7 @@ def create_tables(conn):
     with open("postgresql/create_tables.sql", "r") as f:
         cur.execute(f.read())
     cur.close()
+
 
 def load_stations(conn):
     """
@@ -37,13 +47,13 @@ def load_stations(conn):
     """
     cur = conn.cursor()
 
-    Stations.cache_dir = 'meteostat/cache'
+    Stations.cache_dir = "meteostat/cache"
 
     stations = Stations()
 
-    stations = stations.region('RO')
+    stations = stations.region("RO")
 
-    print('Stations in Romania:', stations.count())
+    print("Stations in Romania:", stations.count())
 
     # Fetch once and filter locally if REGIONS are provided
     df_stations = stations.fetch()
@@ -59,7 +69,7 @@ def load_stations(conn):
 
     # Convert date strings to datetime
     date_cols = ["hourly_start", "hourly_end", "daily_start", "daily_end"]
-    
+
     for col in date_cols:
         df_stations[col] = pd.to_datetime(df_stations[col]).dt.date
 
@@ -67,7 +77,7 @@ def load_stations(conn):
     df_stations.replace({pd.NA: None}, inplace=True)
 
     # --- Filter DataFrame first ---
-    valid_mask = df_stations['wmo'].apply(is_valid_wmo)
+    valid_mask = df_stations["wmo"].apply(is_valid_wmo)
     n_total = len(df_stations)
     n_kept = int(valid_mask.sum())
     n_dropped = n_total - n_kept
@@ -76,7 +86,7 @@ def load_stations(conn):
 
     if n_dropped:
         # show a few example offending values for debugging
-        bad_examples = df_stations.loc[~valid_mask, 'wmo'].astype(str).unique()[:20]
+        bad_examples = df_stations.loc[~valid_mask, "wmo"].astype(str).unique()[:20]
         print("Examples of dropped wmo values:", bad_examples)
 
     # Convert DataFrame rows to list of tuples in the same column order as the table
@@ -91,21 +101,23 @@ def load_stations(conn):
             print(f"Skipping row due to wmo conversion error: {row}")
             continue
 
-        records.append((
-            row.name,
-            row.country,
-            row.region,
-            wmo_value,
-            row.icao,
-            row.latitude,
-            row.longitude,
-            row.elevation,
-            row.timezone,
-            row.hourly_start,
-            row.hourly_end,
-            row.daily_start,
-            row.daily_end,
-        ))
+        records.append(
+            (
+                row.name,
+                row.country,
+                row.region,
+                wmo_value,
+                row.icao,
+                row.latitude,
+                row.longitude,
+                row.elevation,
+                row.timezone,
+                row.hourly_start,
+                row.hourly_end,
+                row.daily_start,
+                row.daily_end,
+            )
+        )
 
     # Only insert when we have records
     if records:
@@ -115,6 +127,7 @@ def load_stations(conn):
 
     conn.commit()
     cur.close()
+
 
 def load_weather_data(conn):
     """
@@ -138,11 +151,11 @@ def load_weather_data(conn):
     end_date = datetime.today()
 
     for index, row in df_station_data.iterrows():
-        
+
         station_id = int(row["wmo"])
 
         start_date = get_start_date(row=row)
-        
+
         # Get the hourly, daily datas then fetch the data
         df_hourly = Hourly(station_id, start=start_date, end=end_date).fetch()
         df_daily = Daily(station_id, start=start_date, end=end_date).fetch()

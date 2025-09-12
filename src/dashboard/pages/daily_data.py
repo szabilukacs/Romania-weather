@@ -18,6 +18,7 @@ from src.utils.utils import load_data_into_df
 from src.utils.queries import SELECT_STATION_DATA
 from src.utils.constants import COCO_CODES, DAILY_DAYS_SHIFT
 
+
 def show_temperature():
     """Display daily temperature as a line chart."""
     temp_chart = (
@@ -26,46 +27,53 @@ def show_temperature():
         .encode(
             x=alt.X("time:T", title="Idő"),
             y=alt.Y("temp:Q", title="Átlaghőmérséklet (°C)"),
-            tooltip=["time", "temp"]
+            tooltip=["time", "temp"],
         )
-        .properties(title="🌡 Napi hőmérséklet alakulása", width=700, height=300, padding={"top": 30, "bottom": 10, "left": 10, "right": 10})
+        .properties(
+            title="🌡 Napi hőmérséklet alakulása",
+            width=700,
+            height=300,
+            padding={"top": 30, "bottom": 10, "left": 10, "right": 10},
+        )
     )
     st.altair_chart(temp_chart, use_container_width=True)
+
 
 def show_prcp():
     """Display daily precipitation as a bar chart."""
     prcp_chart = (
-            alt.Chart(df)
-            .mark_bar(color="blue", opacity=0.7)
-            .encode(
-                x=alt.X("time:T", title="Idő"),
-                y=alt.Y("prcp:Q", title="Csapadék (mm)"),
-                tooltip=["time", "prcp"]
-            )
-            .properties(title="🌧 Napi csapadék", width=700, height=200, padding={"top": 30, "bottom": 10, "left": 10, "right": 10})
+        alt.Chart(df)
+        .mark_bar(color="blue", opacity=0.7)
+        .encode(
+            x=alt.X("time:T", title="Idő"),
+            y=alt.Y("prcp:Q", title="Csapadék (mm)"),
+            tooltip=["time", "prcp"],
         )
-        
+        .properties(
+            title="🌧 Napi csapadék",
+            width=700,
+            height=200,
+            padding={"top": 30, "bottom": 10, "left": 10, "right": 10},
+        )
+    )
+
     st.altair_chart(prcp_chart, use_container_width=True)
+
 
 def show_statistics():
     """Display summary statistics: sunshine duration and snowfall."""
-    total_sun_minutes = df['tsun'].sum()
+    total_sun_minutes = df["tsun"].sum()
     hours = total_sun_minutes // 60
     minutes = total_sun_minutes % 60
 
-    total_snow = df['snow'].sum()  # mm
-    
+    total_snow = df["snow"].sum()  # mm
+
     col1, col2 = st.columns(2)
 
-    col1.metric(
-        label="🌞 Összes napsütés aznap",
-        value=f"{hours}h {minutes}m"
-    )
+    col1.metric(label="🌞 Összes napsütés aznap", value=f"{hours}h {minutes}m")
 
-    col2.metric(
-        label="❄️ Hullott hó mennyiség",
-        value=f"{total_snow:.1f} mm"
-    )
+    col2.metric(label="❄️ Hullott hó mennyiség", value=f"{total_snow:.1f} mm")
+
 
 def show_coco():
     """Display timeline of weather condition codes (coco)."""
@@ -111,15 +119,9 @@ stations = load_data_into_df(SELECT_STATION_DATA)
 # Load station list
 stations = load_data_into_df(SELECT_STATION_DATA)
 station_name = st.selectbox("Choose a station:", stations["name"])
-station_id = stations.loc[
-    stations["name"] == station_name, "wmo"
-].values[0]
-hourly_start = stations.loc[
-    stations["name"] == station_name, "hourly_start"
-].values[0]
-elevation = stations.loc[
-    stations["name"] == station_name, "elevation"
-].values[0]
+station_id = stations.loc[stations["name"] == station_name, "wmo"].values[0]
+hourly_start = stations.loc[stations["name"] == station_name, "hourly_start"].values[0]
+elevation = stations.loc[stations["name"] == station_name, "elevation"].values[0]
 
 # Select date
 today = pd.to_datetime("today").date()
@@ -129,7 +131,11 @@ selected_date = st.date_input(
     min_value=hourly_start,
 )
 
-data = Hourly(station_id,start = datetime(selected_date.year,1,1),end = datetime(selected_date.year,12,31))
+data = Hourly(
+    station_id,
+    start=datetime(selected_date.year, 1, 1),
+    end=datetime(selected_date.year, 12, 31),
+)
 
 # Select datas from database
 query = f"""
@@ -152,7 +158,7 @@ else:
     show_temperature()
 
     show_prcp()
-    
+
     show_coco()
 
     # Show Raw data table
