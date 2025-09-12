@@ -5,9 +5,9 @@ from src.ingestion.load_data import load_stations, create_tables, load_weather_d
 
 def main():
 
-    # TODO: logikat frissiteni
+ 
+    # TODO: Docker ok, airflow folyamatban.
     # TODO: Normals, streamlit pagen abrazolni esetleg, de adatbazisba nem kell menteni
-    # TODO: DAG implementalsa, airflow ha megy
     # TODO: Meteostat adatokat is frissiteni, arra is DAG pl. 
     # Release
     # Ezutan a cloudos cuccok

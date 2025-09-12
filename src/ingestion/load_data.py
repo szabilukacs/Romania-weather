@@ -1,4 +1,6 @@
 import pandas as pd
+import http.client
+import time
 from datetime import datetime
 from meteostat import Stations, Daily, Hourly
 from psycopg2.extras import execute_values
@@ -15,7 +17,13 @@ from src.celan_and_validate.clean_and_validate import (
     clean_and_validate_days,
     is_valid_wmo,
 )
-from src.utils.constants import REGIONS, COLS_HOURLY, COLS_DAILY
+from src.utils.constants import (
+    REGIONS,
+    COLS_HOURLY,
+    COLS_DAILY,
+    NR_OF_RETRIES,
+    DELAY_TIME_S,
+)
 
 
 def create_tables(conn):
@@ -135,6 +143,20 @@ def load_stations(conn):
     cur.close()
 
 
+def fetch_with_retry(fetch_func, retries=NR_OF_RETRIES, delay=DELAY_TIME_S):
+    for attempt in range(retries):
+        try:
+            return fetch_func()
+        except http.client.IncompleteRead:
+            if attempt < retries - 1:
+                print(
+                    f"IncompleteRead, retrying in {delay}s... ({attempt+1}/{retries})"
+                )
+                time.sleep(delay)
+            else:
+                raise
+
+
 def load_weather_data(conn):
     """
     Fetch and store weather data (hourly and daily) from Meteostat API
@@ -170,8 +192,12 @@ def load_weather_data(conn):
             update_last = False
 
         # Get the hourly, daily datas then fetch the data
-        df_hourly = Hourly(station_id, start=start_date, end=end_date).fetch()
-        df_daily = Daily(station_id, start=start_date, end=end_date).fetch()
+        df_hourly = fetch_with_retry(
+            lambda: Hourly(station_id, start=start_date, end=end_date).fetch()
+        )
+        df_daily = fetch_with_retry(
+            lambda: Daily(station_id, start=start_date, end=end_date).fetch()
+        )
 
         # Clean data
         df_hourly = clean_and_validate_hours(df_hourly)

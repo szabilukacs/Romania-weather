@@ -182,3 +182,4 @@ cython_debug/
 Roadmap.docx
 ~$oadmap.docx
 /meteostat/cache
+config/airflow.cfg

@@ -67,6 +67,9 @@ COLS_DAILY = [
     "tsun",
 ]
 
+NR_OF_RETRIES = 3
+DELAY_TIME_S = 5
+
 # test
 REGIONS = ["HA"]
 
