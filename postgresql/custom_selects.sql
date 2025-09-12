@@ -8,7 +8,7 @@ select * from weather_data_hourly where time > '2010-06-15' and snow > 1;
 
 select * from weather_data_daily where station_id = '15004' and time > '2005-01-01';
 
-select * from weather_data_monthly;
+select * from weather_data_daily;
 
 Select min(temp) from weather_data_hourly;
 

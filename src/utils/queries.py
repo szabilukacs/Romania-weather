@@ -6,7 +6,7 @@ INSERT_STATIONS = """
         ON CONFLICT DO NOTHING;  -- prevents crash if duplicates exist
     """
 SELEC_STATION_START_VALUES = (
-    """ SELECT wmo, hourly_start, daily_start FROM stations; """
+    """ SELECT wmo, hourly_start, daily_start, last_update FROM stations; """
 )
 
 INSERT_WEATHER_DAILY = """
@@ -36,3 +36,9 @@ JOIN (
 """
 
 SELECT_STATIONS_DROPDOWN = "SELECT wmo, name FROM stations;"
+
+UPDATE_STATION_LAST_UPDATE = """
+                UPDATE stations
+                SET last_update = %s
+                WHERE wmo = %s
+                """

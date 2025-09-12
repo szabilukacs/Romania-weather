@@ -8,6 +8,7 @@ from src.utils.queries import (
     INSERT_STATIONS,
     SELEC_STATION_START_VALUES,
     INSERT_WEATHER_DAILY,
+    UPDATE_STATION_LAST_UPDATE,
 )
 from src.celan_and_validate.clean_and_validate import (
     clean_and_validate_hours,
@@ -63,9 +64,9 @@ def load_stations(conn):
         print("Invalid data!")
         return
 
-    print("Filtered stations:", len(df_stations))
+    # print("Filtered stations:", len(df_stations))
 
-    print(df_stations)
+    # print(df_stations)
 
     # Convert date strings to datetime
     date_cols = ["hourly_start", "hourly_end", "daily_start", "daily_end"]
@@ -124,6 +125,7 @@ def load_stations(conn):
         )
 
     # Only insert when we have records
+    # On conflict do nothing, so skip the duplicates
     if records:
         execute_values(cur, INSERT_STATIONS, records)
     else:
@@ -144,7 +146,6 @@ def load_weather_data(conn):
         - Clean and validate the data.
         - Insert hourly data using COPY for efficiency.
         - Insert daily data using parameterized INSERT.
-
     Args:
         conn: Open PostgreSQL database connection object.
     """
@@ -158,7 +159,15 @@ def load_weather_data(conn):
 
         station_id = int(row["wmo"])
 
-        start_date = get_start_date(row=row)
+        # --- Decide start_date based on last_update ---
+        if pd.isna(row["last_update"]):
+            # NULL -> fetch everything from default start date
+            start_date = get_start_date(row=row)
+            update_last = True  # we will update the last update value
+        else:
+            # It was loaded before
+            start_date = row["last_update"]
+            update_last = False
 
         # Get the hourly, daily datas then fetch the data
         df_hourly = Hourly(station_id, start=start_date, end=end_date).fetch()
@@ -173,5 +182,13 @@ def load_weather_data(conn):
 
         # Insert Daily datas
         insert_into_db(df_daily, conn, station_id, INSERT_WEATHER_DAILY, COLS_DAILY)
+
+        # --- Update last_update if NULL ---
+        if update_last:
+            cur.execute(
+                UPDATE_STATION_LAST_UPDATE,
+                (datetime.now(), station_id),
+            )
+            conn.commit()
 
     cur.close()

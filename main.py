@@ -5,8 +5,10 @@ from src.ingestion.load_data import load_stations, create_tables, load_weather_d
 
 def main():
 
+    # TODO: logikat frissiteni
     # TODO: Normals, streamlit pagen abrazolni esetleg, de adatbazisba nem kell menteni
     # TODO: DAG implementalsa, airflow ha megy
+    # TODO: Meteostat adatokat is frissiteni, arra is DAG pl. 
     # Release
     # Ezutan a cloudos cuccok
 
@@ -18,8 +20,8 @@ def main():
 
     create_tables(conn)
     
-    load_stations(conn)
-    
+    load_stations(conn) 
+     
     load_weather_data(conn)
 
     cur.close()

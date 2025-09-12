@@ -1,9 +1,8 @@
 
-DROP TABLE IF EXISTS stations CASCADE;
-DROP TABLE IF EXISTS weather_data_hourly CASCADE;
-DROP TABLE IF EXISTS weather_data_daily CASCADE;
-DROP TABLE IF EXISTS weather_data_monthly CASCADE;
-DROP TABLE IF EXISTS weather_live CASCADE;
+-- DROP TABLE IF EXISTS stations CASCADE;
+-- DROP TABLE IF EXISTS weather_data_hourly CASCADE;
+-- DROP TABLE IF EXISTS weather_data_daily CASCADE;
+-- DROP TABLE IF EXISTS weather_live CASCADE;
 
 CREATE TABLE IF NOT EXISTS stations (
     name TEXT NOT NULL,              -- station name
@@ -19,8 +18,7 @@ CREATE TABLE IF NOT EXISTS stations (
     hourly_end DATE,                 -- last available hourly record
     daily_start DATE,                -- first available daily record
     daily_end DATE,                  -- last available daily record
-    monthly_start DATE,              -- first available monthly record
-    monthly_end DATE                 -- last available monthly record
+    last_update TIMESTAMP                 -- last updated by me
 );
 
 CREATE TABLE IF NOT EXISTS weather_data_hourly (
