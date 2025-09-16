@@ -22,7 +22,7 @@ The goal is to simulate a real-world scenario:
 - Load the data into a **PostgreSQL database**.  
 - Provide an **interactive Streamlit dashboard** to explore, summarize, and visualize the results.  
 
-This project demonstrates **ETL pipelines, orchestration, containerization, and visualization**, making it a good portfolio project for **data engineering**.
+This project demonstrates **ETL pipelines, orchestration, containerization, and visualization**.
 
 ---
 
