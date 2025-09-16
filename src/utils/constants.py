@@ -70,9 +70,8 @@ COLS_DAILY = [
 NR_OF_RETRIES = 3
 DELAY_TIME_S = 5
 
-# test
+# test - Only Hargita
 REGIONS = ["HA"]
 
-# Transylvani region
-# TODO: felosztani 2 percre majd DAG-ban limit miatt
+# Transylvania region
 # REGIONS = ['HA', 'SM','MA','BH','SJ','CJ','BN','MU','AD','SI','HU','CV','BS']

@@ -4,9 +4,8 @@ import psycopg2
 from psycopg2.extras import execute_values
 import io
 
-from src.utils.connect_db import connect_to_db
-
 sys.path.append("../../")
+from src.utils.connect_db import connect_to_db
 
 
 def get_start_date(row, cols=("hourly_start", "daily_start")):

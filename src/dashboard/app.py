@@ -12,11 +12,11 @@ import sys
 import streamlit as st
 import pandas as pd
 import altair as alt
-
+sys.path.append("../")
 from utils.utils import load_data_into_df
 from utils.queries import SELECT_STATIONS_DROPDOWN
 
-sys.path.append("../")
+
 # sys.path.insert(1, '/src/dashboard/')
 
 

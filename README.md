@@ -60,6 +60,36 @@ This project is **not just about weather data** – it’s about practicing the 
 
 ---
 
+# 🖼️ Screenshots (Streamlit App)
+
+Below are a few screenshots of the **Streamlit dashboard**.  
+These demonstrate how historical and current weather data are displayed, compared, and summarized.
+
+👉 Note: In the `constants.py` file you can configure which regions are included.  
+For the examples below, only the **Hargita** region was selected.
+
+---
+
+### 🌦 Station Selection Dropdown
+Romania Map with selected meteo stations.
+
+![Map with current data](https://github.com/szabilukacs/Romania-weather/tree/main/img/map.png)
+
+---
+
+### 📈 Historical vs Current Weather
+Monthly comparison of past trends with the latest fetched data.
+
+![Historical vs Current](https://github.com/szabilukacs/Romania-weather/tree/main/img/monthly.png)
+
+---
+
+### 📊 Aggregated Statistics
+Summaries such as averages, min/max values, and long-term weather patterns.
+
+![Aggregated Stats](https://github.com/szabilukacs/Romania-weather/tree/main/img/yearly.png)
+
+
 ## 🔧 Tech Stack
 
 - **Python 3.11+**  
