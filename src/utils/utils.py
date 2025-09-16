@@ -5,7 +5,7 @@ from psycopg2.extras import execute_values
 import io
 
 sys.path.append("../../")
-from src.utils.connect_db import connect_to_db
+from src.utils.connect_db import connect_to_db  # noqa: E402
 
 
 def get_start_date(row, cols=("hourly_start", "daily_start")):
