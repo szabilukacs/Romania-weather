@@ -1,16 +1,13 @@
 # Romania-weather
 [![Python CI](https://github.com/szabilukacs/Romania-weather/actions/workflows/python-tests.yml/badge.svg)](https://github.com/szabilukacs/Romania-weather/actions/workflows/python-tests.yml)
 ![Docker](https://img.shields.io/badge/docker-build-blue?logo=docker)
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Lint](https://img.shields.io/badge/lint-flake8-blue)](https://flake8.pycqa.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue?logo=python)
-
 ![Postgres](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
 
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen?logo=pytest)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Lint](https://img.shields.io/badge/lint-flake8-blue)](https://flake8.pycqa.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 
 ---
